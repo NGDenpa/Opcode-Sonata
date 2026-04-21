@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>Machine Loop - Prototype</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #1a1a2e; color: #e0e0e0; font-family: monospace;
+  height: 100vh; overflow: hidden;
+}
+
+/* ---- APP LAYOUT ---- */
+#app-layout {
+  height: 100%;
+  display: flex;
+}
+#left-column {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+#main-layout {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+
+/* ---- MACHINE LOOP PANEL (BOTTOM) ---- */
+#left-panel {
+  flex: 0 0 264px;
+  background: #16213e;
+  display: flex; flex-direction: column;
+  border-top: 1px solid #0f3460;
+  padding: 10px; gap: 8px; overflow: hidden;
+}
+.panel-title {
+  color: #f4a261;
+  font-size: 36px;
+  line-height: 1;
+  letter-spacing: 2px;
+  text-align: center;
+}
+.editor-block { display: flex; flex-direction: column; gap: 4px; }
+.entity-label { font-size: 11px; color: #aaa; display: flex; align-items: center; gap: 5px; }
+.dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+textarea {
+  background: #0a0a1a; color: #f4a261;
+  border: 1px solid #0f3460; border-radius: 3px;
+  padding: 5px; font-family: monospace; font-size: 12px;
+  resize: vertical; width: 100%;
+}
+textarea:focus { outline: none; border-color: #f4a261; }
+.help-text { font-size: 10px; color: #555; line-height: 1.5; }
+#apply-btn {
+  background: #2a9d8f; border: none; color: #fff;
+  padding: 6px; cursor: pointer; font-family: monospace; font-size: 12px;
+  border-radius: 3px;
+}
+#apply-btn:hover { background: #3abfaf; }
+#status { color: #2a9d8f; font-size: 11px; min-height: 14px; }
+.loop-row { display: flex; align-items: flex-start; gap: 10px; }
+#pipe-editors {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+}
+#pipe-editors .editor-block {
+  min-width: 0;
+  background: #101a33;
+  border: 1px solid #0f3460;
+  border-radius: 4px;
+  padding: 6px;
+}
+#other-loop-items {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  width: 100%;
+}
+.loop-section {
+  background: #101a33;
+  border: 1px solid #0f3460;
+  border-radius: 4px;
+  padding: 6px;
+  min-width: 160px;
+  flex: 1 1 200px;
+}
+
+/* ---- CANVAS AREA ---- */
+#canvas-area {
+  position: relative;
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 10px;
+  padding: 10px;
+}
+canvas { border: 1px solid #0f3460; cursor: pointer; }
+#controls { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+button {
+  background: #0f3460; color: #e0e0e0;
+  border: 1px solid #e94560; border-radius: 3px;
+  padding: 5px 12px; cursor: pointer; font-family: monospace; font-size: 12px;
+}
+button:hover { background: #e94560; }
+button.active { background: #e94560; }
+#tick-display, #hit-display { font-size: 13px; color: #f4a261; min-width: 80px; }
+#hit-display { color: #2a9d8f; }
+
+/* ---- RIGHT PANEL ---- */
+#right-panel {
+  width: 270px; min-width: 270px;
+  background: #16213e;
+  border-left: 1px solid #0f3460;
+  padding: 12px; display: flex; flex-direction: column; gap: 10px;
+  overflow: hidden;
+}
+#right-panel h3 { color: #f4a261; font-size: 12px; }
+.level-btn {
+  background: #0a0a1a; border: 1px solid #0f3460; border-radius: 3px;
+  color: #aaa; padding: 4px 8px; font-size: 11px;
+  text-align: left; cursor: pointer; font-family: monospace;
+  display: block; width: 100%; margin-bottom: 4px;
+}
+.level-btn:hover { border-color: #e94560; color: #e0e0e0; }
+.level-btn.current { border-color: #2a9d8f; color: #2a9d8f; }
+.stat-row { display: flex; justify-content: space-between; color: #555; font-size: 11px; }
+.stat-val { color: #f4a261; }
+
+/* ---- SOLUTION POPUP ---- */
+#solution-btn {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 5;
+  border-color: #2a9d8f;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  padding: 0;
+  font-size: 22px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#solution-btn:hover { background: #2a9d8f; }
+#solution-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.72);
+  align-items: center;
+  justify-content: center;
+  z-index: 120;
+}
+#solution-overlay.show { display: flex; }
+#solution-card {
+  width: min(680px, 90vw);
+  max-height: 78vh;
+  background: #16213e;
+  border: 1px solid #2a9d8f;
+  border-radius: 8px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+#solution-title {
+  color: #2a9d8f;
+  font-size: 14px;
+}
+#solution-content {
+  white-space: pre-wrap;
+  line-height: 1.65;
+  color: #e0e0e0;
+  background: #101a33;
+  border: 1px solid #0f3460;
+  border-radius: 6px;
+  padding: 10px;
+  overflow: auto;
+  font-size: 12px;
+}
+#solution-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* ---- WIN OVERLAY ---- */
+#win-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.75);
+  align-items: center; justify-content: center;
+  flex-direction: column; gap: 16px; z-index: 100;
+}
+#win-overlay.show { display: flex; }
+#win-overlay div { font-size: 24px; color: #2a9d8f; }
+#win-overlay button { border-color: #2a9d8f; padding: 8px 20px; font-size: 14px; }
+</style>
+</head>
+<body>
+<div id="app-layout">
+  <div id="left-column">
+    <div id="main-layout">
+      <!-- CENTER: Game Canvas -->
+      <div id="canvas-area">
+        <button id="solution-btn" onclick="openSolution()" title="查看当前关卡解法">解</button>
+        <canvas id="canvas" width="600" height="500"></canvas>
+        <div id="controls">
+          <button id="play-btn" onclick="togglePlay()">▶ 播放</button>
+          <button onclick="stepOnce()">N 单步</button>
+          <button onclick="resetGame()">↺ 重置</button>
+          <span id="tick-display">Tick: 0</span>
+          <span id="hit-display">命中: 0 / ?</span>
+          <label style="font-size:11px;color:#555">
+            速率:
+            <input id="tick-rate" type="range" min="100" max="1200" value="500"
+              style="width:70px;vertical-align:middle;"
+              oninput="onTickRateChange()">
+            <span id="rate-label">500ms</span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOTTOM: MACHINE LOOP -->
+    <div id="left-panel">
+      <div class="panel-title">MACHINE LOOP</div>
+
+      <div class="loop-row">
+        <div id="other-loop-items">
+          <div class="loop-section editor-block">
+            <div class="entity-label">
+              <span class="dot" style="background:#e94560"></span>
+              炮台节奏
+            </div>
+            <textarea id="turret-loop" rows="2">1---</textarea>
+            <div class="help-text">1=发射 -=静默，循环执行</div>
+          </div>
+
+          <div class="loop-section help-text">
+            水管Loop语法:<br>
+            R=顺时针90°<br>
+            L=逆时针90°<br>
+            -=不动<br>
+            逗号分隔，循环
+          </div>
+
+          <div class="loop-section">
+            <button id="apply-btn" onclick="applyScripts()">▶ 应用脚本</button>
+            <div id="status" style="margin-top:6px;">就绪</div>
+          </div>
+
+          <div class="loop-section help-text" style="color:#444">
+            点击水管 = 顺时针旋转<br>
+            Shift+点击 = 逆时针<br>
+            Space = 播放/暂停<br>
+            N = 单步执行
+          </div>
+        </div>
+      </div>
+
+      <div class="loop-row">
+        <div id="pipe-editors"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Levels & Stats -->
+  <div id="right-panel">
+    <h3>关卡</h3>
+    <div id="level-select"></div>
+
+    <h3>状态</h3>
+    <div class="stat-row"><span>总Tick</span><span class="stat-val" id="stat-ticks">0</span></div>
+    <div class="stat-row"><span>子弹数</span><span class="stat-val" id="stat-bullets">0</span></div>
+
+    <h3>图例</h3>
+    <div style="font-size:10px;color:#555;line-height:1.9">
+      <span style="color:#e94560">■</span> 炮台 (Turret)<br>
+      <span style="color:#f4a261">●</span> 子弹 (Bullet)<br>
+      <span style="color:#4a90d9">━</span> 水管 (Pipe)<br>
+      <span style="color:#2a9d8f">◎</span> 目标 (Target)
+    </div>
+
+    <h3>水管形状</h3>
+    <div style="font-size:10px;color:#555;line-height:1.9">
+      I = 直管<br>
+      L = 弯管 (转向)<br>
+      T = 三通<br>
+      + = 十字
+    </div>
+  </div>
+</div>
+
+<!-- Solution Overlay -->
+<div id="solution-overlay" onclick="closeSolution(event)">
+  <div id="solution-card" onclick="event.stopPropagation()">
+    <div id="solution-title">当前关卡解法（示例）</div>
+    <div id="solution-content"></div>
+    <div id="solution-actions">
+      <button onclick="copyPipePreset()">复制水管方案</button>
+      <button onclick="fillPipePreset()">填入水管输入栏</button>
+      <button onclick="closeSolution()">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- Win Overlay -->
+<div id="win-overlay">
+  <div>🎯 目标达成！</div>
+  <div id="win-stats" style="font-size:14px;color:#f4a261"></div>
+  <button onclick="resetGame()">再来一次</button>
+</div>
+
+<script src="engine.js"></script>
+<script src="levels.js"></script>
+<script src="main.js"></script>
+</body>
+</html>
