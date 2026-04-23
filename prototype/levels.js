@@ -8,6 +8,7 @@ const LEVELS = [
     name: "教程 1 - 直线射击",
     cols: 10,
     rows: 10,
+    bpm: 100,
     tickRate: 500,
     turrets: [
       { col: 1, row: 5, dir: DIR.RIGHT, loop: "1---" }
@@ -23,6 +24,7 @@ const LEVELS = [
     name: "教程 2 - 静态弯管",
     cols: 10,
     rows: 10,
+    bpm: 100,
     tickRate: 500,
     turrets: [
       { col: 1, row: 2, dir: DIR.RIGHT, loop: "1---" }
@@ -40,6 +42,7 @@ const LEVELS = [
     name: "教程 3 - 旋转水管",
     cols: 10,
     rows: 10,
+    bpm: 90,
     tickRate: 600,
     turrets: [
       { col: 1, row: 5, dir: DIR.RIGHT, loop: "1-1-" }
@@ -57,6 +60,7 @@ const LEVELS = [
     name: "挑战 - 复杂管道",
     cols: 10,
     rows: 10,
+    bpm: 120,
     tickRate: 400,
     turrets: [
       { col: 1, row: 3, dir: DIR.RIGHT, loop: "1---1---" }
@@ -76,6 +80,7 @@ const LEVELS = [
     name: "挑战 - 相邻全类型管网",
     cols: 10,
     rows: 10,
+    bpm: 125,
     tickRate: 380,
     turrets: [
       { col: 1, row: 5, dir: DIR.RIGHT, loop: "1-1-1---" }
@@ -99,6 +104,7 @@ const LEVELS = [
     name: "挑战 - 全连通岔路",
     cols: 10,
     rows: 10,
+    bpm: 130,
     tickRate: 360,
     turrets: [
       { col: 1, row: 4, dir: DIR.RIGHT, loop: "1-1-1-1---" }
@@ -126,6 +132,7 @@ const LEVELS = [
     name: "挑战 - 真假岔路",
     cols: 10,
     rows: 10,
+    bpm: 135,
     tickRate: 340,
     turrets: [
       { col: 1, row: 5, dir: DIR.RIGHT, loop: "1-1-1-1-1---" }
@@ -153,6 +160,7 @@ const LEVELS = [
     name: "挑战 - 7发旋律",
     cols: 10,
     rows: 10,
+    bpm: 110,
     tickRate: 420,
     hitMelody: "CCGGAAG",
     hitOctave: 4,

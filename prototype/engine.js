@@ -217,6 +217,12 @@ class Game {
     this._timer = null;
     this.onWin = null;
     this.onChange = null;
+    // 音乐节拍系统
+    this.bpm = 120; // 默认每分钟节拍数
+    this.beatInterval = 60000 / this.bpm; // 每拍的毫秒数
+    this.beatCounter = 0; // 节拍计数器
+    this.subBeatCounter = 0; // 子节拍计数器（用于4分音符等）
+    this.beatsPerMeasure = 4; // 每小节的拍数
   }
 
   loadLevel(level) {
@@ -224,8 +230,14 @@ class Game {
     // Keep gameplay grid fixed at 10x10.
     this.cols = 10;
     this.rows = 10;
-    this.tickRate = level.tickRate || 500;
+    // 从关卡配置中加载 BPM，否则使用默认值
+    this.bpm = level.bpm || 120;
+    this.beatInterval = 60000 / this.bpm;
+    // 如果关卡指定了 tickRate，则使用它，否则基于 BPM 计算（默认4分音符为一个 tick）
+    this.tickRate = level.tickRate || (this.beatInterval / 4);
     this.tick = 0;
+    this.beatCounter = 0;
+    this.subBeatCounter = 0;
     this.bullets = [];
     this.turrets = (level.turrets || []).map(t => new Turret(t.col, t.row, t.dir, t.loop));
     this.pipes   = (level.pipes   || []).map((p, i) => new Pipe(p.col, p.row, p.shape, p.rotation || 0, p.loop || '-', i));
@@ -252,6 +264,13 @@ class Game {
     this.targets.forEach(t => t.tick());
     this.bullets = this.bullets.filter(b => b.alive);
     this.tick++;
+
+    // 更新节拍计数器
+    this.subBeatCounter++;
+    // 每4个 tick 为一个节拍（默认4分音符）
+    if (this.subBeatCounter % 4 === 0) {
+      this.beatCounter++;
+    }
 
     if (this.targets.length > 0 && this.targets.every(t => t.done)) {
       this.stop();
@@ -283,6 +302,8 @@ class Game {
   reset() {
     this.stop();
     this.tick = 0;
+    this.beatCounter = 0;
+    this.subBeatCounter = 0;
     this.bullets = [];
     this.turrets.forEach(t => { t.idx = 0; t.flash = 0; });
     this.pipes.forEach(p => p.idx = 0);

@@ -210,12 +210,16 @@ button.active { background: #e94560; }
       <div id="canvas-area">
         <button id="solution-btn" onclick="openSolution()" title="查看当前关卡解法">解</button>
         <canvas id="canvas" width="600" height="500"></canvas>
+        <!-- 节拍可视化指示器 -->
+        <div id="beat-visualizer" style="width: 600px; height: 60px; margin: 10px 0; display: flex; align-items: flex-end; gap: 2px; padding: 5px; background: #16213e; border: 1px solid #0f3460; border-radius: 4px;"></div>
+        
         <div id="controls">
           <button id="play-btn" onclick="togglePlay()">▶ 播放</button>
           <button onclick="stepOnce()">N 单步</button>
           <button onclick="resetGame()">↺ 重置</button>
           <span id="tick-display">Tick: 0</span>
           <span id="hit-display">命中: 0 / ?</span>
+          <span id="beat-display">节拍: 0</span>
           <label style="font-size:11px;color:#555">
             速率:
             <input id="tick-rate" type="range" min="100" max="1200" value="500"

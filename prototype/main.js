@@ -2,6 +2,14 @@
 // MAIN - UI glue for Machine Loop prototype
 // ============================================================
 
+// 节拍可视化器
+let beatVisualizer = null;
+let beatBars = [];
+const BARS_COUNT = 32;
+let beatJumpFramesRemaining = 0; // 跳动效果剩余帧数（按帧递减）
+let beatPattern = Array(BARS_COUNT).fill(0.5); // 当前“跳动帧”随机波形数组
+let beatPatternKey = 'default'; // 每个音对应不同风格 key
+
 let game;
 let canvas, ctx;
 let currentLevelIdx = 0;
@@ -112,6 +120,29 @@ function playWinSound() {
   setTimeout(() => playTone(990, 0.14, 'triangle', 0.06, 1320), 200);
 }
 
+function xmur3(str) {
+  let h = 1779033703 ^ str.length;
+  for (let i = 0; i < str.length; i++) {
+    h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
+    h = (h << 13) | (h >>> 19);
+  }
+  return function() {
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    h ^= h >>> 16;
+    return h >>> 0;
+  };
+}
+
+function mulberry32(seed) {
+  return function() {
+    let t = seed += 0x6D2B79F5;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
 function noteFreq(letter, octave = 4) {
   // Equal temperament, A4 = 440Hz
   // Semitone offsets from A within same octave:
@@ -154,6 +185,9 @@ window.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // 初始化节拍可视化器
+  initBeatVisualizer();
+
   game = new Game(12, 10);
   game.onWin = onWin;
   game.onChange = updateUI;
@@ -166,6 +200,113 @@ window.addEventListener('DOMContentLoaded', () => {
 
   requestAnimationFrame(renderLoop);
 });
+
+// 初始化节拍可视化器
+function initBeatVisualizer() {
+  beatVisualizer = document.getElementById('beat-visualizer');
+  if (!beatVisualizer) return;
+  
+  // 清空容器
+  beatVisualizer.innerHTML = '';
+  beatBars = [];
+  
+  // 创建条形元素
+  for (let i = 0; i < BARS_COUNT; i++) {
+    const bar = document.createElement('div');
+    bar.style.width = `${(beatVisualizer.clientWidth - (BARS_COUNT - 1) * 2) / BARS_COUNT}px`;
+    bar.style.height = '0px';
+    bar.style.backgroundColor = '#f4a261';
+    bar.style.borderRadius = '2px 2px 0 0';
+    bar.style.transition = 'height 0.1s ease';
+    beatVisualizer.appendChild(bar);
+    beatBars.push(bar);
+  }
+}
+
+// 更新节拍可视化器
+function updateBeatVisualizer() {
+  if (!beatVisualizer || !game) return;
+  
+  // 更新节拍显示
+  document.getElementById('beat-display').textContent = `节拍: ${game.beatCounter}`;
+  
+  // 计算波形高度
+  const baseHeight = 10;
+  const maxHeight = beatVisualizer.clientHeight - 10;
+  const jumping = beatJumpFramesRemaining > 0;
+  
+  // 创建波形效果
+  for (let i = 0; i < BARS_COUNT; i++) {
+    // 默认状态：黄色，高度统一且较矮
+    let height = baseHeight;
+    let color = '#f4a261'; // 黄色
+    
+    // 跳动效果：被触发时使用随机波形并变红（所有方块同步变红）
+    if (jumping) {
+      height = baseHeight + maxHeight * beatPattern[i];
+      color = '#e94560';
+    }
+    
+    beatBars[i].style.height = `${height}px`;
+    beatBars[i].style.backgroundColor = color;
+  }
+
+  // 按帧递减，保证“触发后一帧回默认”
+  if (beatJumpFramesRemaining > 0) beatJumpFramesRemaining--;
+}
+
+function clamp01(x) { return Math.max(0, Math.min(1, x)); }
+function smoothstep(t) { return t * t * (3 - 2 * t); }
+
+function shapeWaveform(style, i, n, rnd) {
+  const x = i / (n - 1);
+  switch (style) {
+    case 0: { // noisy + center emphasis
+      const center = 1 - Math.abs(2 * x - 1);
+      return clamp01(0.2 + 0.8 * (0.35 * rnd() + 0.65 * center));
+    }
+    case 1: { // spikes
+      const spike = (rnd() < 0.18) ? (0.85 + 0.15 * rnd()) : (0.18 + 0.22 * rnd());
+      return clamp01(spike);
+    }
+    case 2: { // saw-ish
+      const jitter = (rnd() - 0.5) * 0.18;
+      return clamp01(0.2 + 0.8 * clamp01(x + jitter));
+    }
+    case 3: { // pulse bands
+      const bands = 3 + Math.floor(rnd() * 5); // 3-7
+      const phase = rnd();
+      const s = Math.sin((x * bands + phase) * Math.PI * 2);
+      const pulse = s > 0.45 ? 1 : s > 0.0 ? 0.65 : 0.25;
+      return clamp01(pulse * (0.85 + 0.15 * rnd()));
+    }
+    case 4: { // symmetric hill
+      const hill = smoothstep(1 - Math.abs(2 * x - 1));
+      return clamp01(0.2 + 0.8 * (0.55 * hill + 0.45 * rnd()));
+    }
+    default: {
+      return clamp01(0.2 + 0.8 * rnd());
+    }
+  }
+}
+
+// 触发跳动效果（任何音触发时调用）
+function triggerBeatJump(key = 'default') {
+  beatJumpFramesRemaining = 15; // 持续 15 帧
+  beatPatternKey = String(key);
+
+  const seedFn = xmur3(beatPatternKey + '|' + Date.now().toString(36));
+  const rnd = mulberry32(seedFn());
+  const style = seedFn() % 5; // 0-4：每个音会倾向不同风格
+
+  for (let i = 0; i < BARS_COUNT; i++) {
+    beatPattern[i] = shapeWaveform(style, i, BARS_COUNT, rnd);
+  }
+}
+
+// ============================================================
+// LEVEL
+// ============================================================
 
 // ============================================================
 // LEVEL
@@ -434,6 +575,8 @@ function updateUI() {
   if (target) {
     document.getElementById('hit-display').textContent = `命中: ${target.hits} / ${target.required}`;
     if (target.hits > lastHitCount) {
+      // 只有击中目标时波形图才动（并且每个音风格不同）
+      triggerBeatJump(`hit:${target.hits}`);
       const ok = playHitMelodyNote(target.hits - 1);
       if (!ok) playHitSound();
     }
@@ -446,6 +589,8 @@ function updateUI() {
 // ============================================================
 function renderLoop() {
   render();
+  // DOM 波形图按帧刷新，用于“一帧后回默认”的闪动效果
+  updateBeatVisualizer();
   requestAnimationFrame(renderLoop);
 }
 
