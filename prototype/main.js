@@ -5,6 +5,11 @@
 let game;
 let canvas, ctx;
 let currentLevelIdx = 0;
+let audioCtx = null;
+let lastBulletCount = 0;
+let lastHitCount = 0;
+let sfxEnabled = true;
+let sfxVolume = 0.7;
 const LEVEL_SOLUTIONS = {
   0: [
     "教程 1 解法：",
@@ -55,9 +60,99 @@ const LEVEL_PIPE_PRESETS = {
   6: ["-", "-", "R,-,-,-", "-", "-", "-", "-", "-", "-", "-"]
 };
 
+function ensureAudio() {
+  if (!audioCtx) {
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return null;
+    audioCtx = new Ctx();
+  }
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+
+function playTone(freq, duration = 0.08, type = 'sine', volume = 0.06, slideTo = null) {
+  if (!sfxEnabled) return;
+  const ctx = ensureAudio();
+  if (!ctx) return;
+  const now = ctx.currentTime;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, now);
+  if (slideTo !== null) {
+    osc.frequency.exponentialRampToValueAtTime(Math.max(20, slideTo), now + duration);
+  }
+
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.exponentialRampToValueAtTime(Math.max(0.0001, volume * sfxVolume), now + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start(now);
+  osc.stop(now + duration + 0.01);
+}
+
+function playFireSound() {
+  playTone(720, 0.05, 'square', 0.03, 480);
+}
+
+function playHitSound() {
+  playTone(520, 0.09, 'triangle', 0.05, 900);
+}
+
+function playRotateSound() {
+  playTone(300, 0.04, 'square', 0.025, 240);
+}
+
+function playWinSound() {
+  playTone(440, 0.08, 'triangle', 0.04, 660);
+  setTimeout(() => playTone(660, 0.1, 'triangle', 0.05, 990), 90);
+  setTimeout(() => playTone(990, 0.14, 'triangle', 0.06, 1320), 200);
+}
+
+function noteFreq(letter, octave = 4) {
+  // Equal temperament, A4 = 440Hz
+  // Semitone offsets from A within same octave:
+  // C: -9, G: -2, A: 0
+  const base = 440;
+  const semitoneFromA = letter === 'C' ? -9 : letter === 'G' ? -2 : 0;
+  const octaveShift = (octave - 4) * 12;
+  const n = semitoneFromA + octaveShift;
+  return base * Math.pow(2, n / 12);
+}
+
+function playHitMelodyNote(hitIndexZeroBased) {
+  const level = LEVELS[currentLevelIdx];
+  const melody = (level && level.hitMelody) ? String(level.hitMelody) : "";
+  if (!melody) return false;
+  const octave = Number.isFinite(level.hitOctave) ? level.hitOctave : 4;
+  const ch = melody[hitIndexZeroBased % melody.length];
+  if (ch !== 'C' && ch !== 'G' && ch !== 'A') return false;
+  playTone(noteFreq(ch, octave), 0.14, 'sine', 0.055, null);
+  return true;
+}
+
 window.addEventListener('DOMContentLoaded', () => {
   canvas = document.getElementById('canvas');
   ctx = canvas.getContext('2d');
+
+  const sfxToggle = document.getElementById('sfx-toggle');
+  const sfxVol = document.getElementById('sfx-volume');
+  if (sfxToggle) {
+    sfxEnabled = !!sfxToggle.checked;
+    sfxToggle.addEventListener('change', () => {
+      sfxEnabled = !!sfxToggle.checked;
+      if (sfxEnabled) ensureAudio();
+    });
+  }
+  if (sfxVol) {
+    sfxVolume = Math.max(0, Math.min(1, parseInt(sfxVol.value, 10) / 100));
+    sfxVol.addEventListener('input', () => {
+      sfxVolume = Math.max(0, Math.min(1, parseInt(sfxVol.value, 10) / 100));
+    });
+  }
 
   game = new Game(12, 10);
   game.onWin = onWin;
@@ -129,6 +224,8 @@ function loadLevel(idx) {
   slider.value = game.tickRate;
   document.getElementById('rate-label').textContent = game.tickRate + 'ms';
   setSolutionText();
+  lastBulletCount = game.bullets.length;
+  lastHitCount = game.targets[0]?.hits || 0;
 
   updateUI();
 }
@@ -137,6 +234,7 @@ function loadLevel(idx) {
 // SCRIPT APPLICATION
 // ============================================================
 function applyScripts() {
+  ensureAudio();
   const turretScript = document.getElementById('turret-loop').value.trim();
   if (game.turrets[0]) game.turrets[0].setLoop(turretScript);
 
@@ -164,6 +262,7 @@ function applyScripts() {
 // PLAYBACK CONTROLS
 // ============================================================
 function togglePlay() {
+  ensureAudio();
   game.toggle();
   const btn = document.getElementById('play-btn');
   if (game.playing) {
@@ -176,6 +275,7 @@ function togglePlay() {
 }
 
 function stepOnce() {
+  ensureAudio();
   if (game.playing) return;
   game.stepTick();
 }
@@ -202,6 +302,7 @@ function onTickRateChange() {
 // WIN
 // ============================================================
 function onWin(ticks) {
+  playWinSound();
   document.getElementById('win-overlay').classList.add('show');
   document.getElementById('win-stats').textContent = `用时 ${ticks} 个 Tick`;
   document.getElementById('play-btn').textContent = '▶ 播放';
@@ -212,16 +313,19 @@ function onWin(ticks) {
 // INPUT
 // ============================================================
 function onCanvasClick(e) {
+  ensureAudio();
   const rect = canvas.getBoundingClientRect();
   const col = Math.floor((e.clientX - rect.left)  / game.cellSize);
   const row = Math.floor((e.clientY - rect.top)   / game.cellSize);
   const pipe = game.getPipeAt(col, row);
   if (pipe) {
     pipe.manualRotate(e.shiftKey ? -90 : 90);
+    playRotateSound();
   }
 }
 
 function onKey(e) {
+  ensureAudio();
   if (e.code === 'Space') { e.preventDefault(); togglePlay(); }
   if (e.code === 'KeyN')  { stepOnce(); }
   if (e.code === 'Escape') { closeSolution(); }
@@ -321,9 +425,19 @@ function updateUI() {
   document.getElementById('stat-ticks').textContent   = game.tick;
   document.getElementById('stat-bullets').textContent = game.bullets.length;
 
+  if (game.bullets.length > lastBulletCount) {
+    playFireSound();
+  }
+  lastBulletCount = game.bullets.length;
+
   const target = game.targets[0];
   if (target) {
     document.getElementById('hit-display').textContent = `命中: ${target.hits} / ${target.required}`;
+    if (target.hits > lastHitCount) {
+      const ok = playHitMelodyNote(target.hits - 1);
+      if (!ok) playHitSound();
+    }
+    lastHitCount = target.hits;
   }
 }
 

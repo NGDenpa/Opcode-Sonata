@@ -146,5 +146,22 @@ const LEVELS = [
     targets: [
       { col: 9, row: 4, required: 16 }
     ]
+  },
+
+  // Music: 7 hits melody C C G G A A G
+  {
+    name: "挑战 - 7发旋律",
+    cols: 10,
+    rows: 10,
+    tickRate: 420,
+    hitMelody: "CCGGAAG",
+    hitOctave: 4,
+    turrets: [
+      { col: 1, row: 5, dir: DIR.RIGHT, loop: "1-1-1-1-1-1-1-" }
+    ],
+    pipes: [],
+    targets: [
+      { col: 8, row: 5, required: 7 }
+    ]
   }
 ];

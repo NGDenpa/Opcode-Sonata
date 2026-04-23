@@ -223,6 +223,14 @@ button.active { background: #e94560; }
               oninput="onTickRateChange()">
             <span id="rate-label">500ms</span>
           </label>
+          <label style="font-size:11px;color:#555;display:flex;align-items:center;gap:6px">
+            音效
+            <input id="sfx-toggle" type="checkbox" checked style="vertical-align:middle;">
+          </label>
+          <label style="font-size:11px;color:#555;display:flex;align-items:center;gap:6px">
+            音量
+            <input id="sfx-volume" type="range" min="0" max="100" value="70" style="width:90px;vertical-align:middle;">
+          </label>
         </div>
       </div>
     </div>
