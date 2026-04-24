@@ -5,21 +5,39 @@
 <title>Machine Loop - Prototype</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --terminal-green: #7dff8a;
+  --terminal-green-soft: #4edc6d;
+  --terminal-bg: #07120b;
+  --terminal-bg-panel: rgba(9, 26, 16, 0.88);
+  --terminal-line: rgba(125, 255, 138, 0.55);
+  --terminal-line-dim: rgba(125, 255, 138, 0.22);
+  --terminal-text: #d7ffe0;
+  --terminal-muted: #7ab788;
+}
 body {
-  background: #1a1a2e; color: #e0e0e0; font-family: monospace;
+  background: var(--terminal-bg);
+  color: var(--terminal-text);
+  font-family: Consolas, "Cascadia Mono", monospace;
   height: 100vh; overflow: hidden;
+  background-image: url('assets/generated/start_screen_bg.png');
+  background-size: cover;
+  background-position: center;
 }
 
 /* ---- APP LAYOUT ---- */
 #app-layout {
   height: 100%;
   display: flex;
+  position: relative;
 }
 #left-column {
   flex: 1;
+  min-width: 0;
   min-height: 0;
   display: flex;
   flex-direction: column;
+  margin-left: 290px;
 }
 #main-layout {
   flex: 1;
@@ -29,37 +47,48 @@ body {
 
 /* ---- MACHINE LOOP PANEL (BOTTOM) ---- */
 #left-panel {
-  flex: 0 0 264px;
-  background: #16213e;
+  position: fixed;
+  left: 12px;
+  bottom: 12px;
+  width: 266px;
+  height: 44vh;
+  min-height: 290px;
+  max-height: 430px;
+  background: var(--terminal-bg-panel);
+  background-image: url('assets/generated/ui_panel_skin.png');
+  background-size: cover;
+  background-position: center;
   display: flex; flex-direction: column;
-  border-top: 1px solid #0f3460;
+  border: 1px solid var(--terminal-line);
+  box-shadow: inset 0 0 0 1px var(--terminal-line-dim), 0 0 24px rgba(53, 255, 120, 0.08);
   padding: 10px; gap: 8px; overflow: hidden;
+  z-index: 30;
 }
 .panel-title {
-  color: #f4a261;
-  font-size: 36px;
+  color: var(--terminal-green);
+  font-size: 24px;
   line-height: 1;
   letter-spacing: 2px;
   text-align: center;
 }
 .editor-block { display: flex; flex-direction: column; gap: 4px; }
-.entity-label { font-size: 11px; color: #aaa; display: flex; align-items: center; gap: 5px; }
+.entity-label { font-size: 11px; color: var(--terminal-muted); display: flex; align-items: center; gap: 5px; }
 .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
 textarea {
-  background: #0a0a1a; color: #f4a261;
-  border: 1px solid #0f3460; border-radius: 3px;
+  background: rgba(5, 16, 9, 0.88); color: var(--terminal-green);
+  border: 1px solid var(--terminal-line); border-radius: 3px;
   padding: 5px; font-family: monospace; font-size: 12px;
   resize: vertical; width: 100%;
 }
-textarea:focus { outline: none; border-color: #f4a261; }
-.help-text { font-size: 10px; color: #555; line-height: 1.5; }
+textarea:focus { outline: none; border-color: var(--terminal-green); }
+.help-text { font-size: 10px; color: var(--terminal-muted); line-height: 1.5; }
 #apply-btn {
-  background: #2a9d8f; border: none; color: #fff;
+  background: rgba(20, 83, 36, 0.8); border: 1px solid var(--terminal-line); color: var(--terminal-text);
   padding: 6px; cursor: pointer; font-family: monospace; font-size: 12px;
   border-radius: 3px;
 }
-#apply-btn:hover { background: #3abfaf; }
-#status { color: #2a9d8f; font-size: 11px; min-height: 14px; }
+#apply-btn:hover { background: rgba(32, 112, 51, 0.85); }
+#status { color: var(--terminal-green); font-size: 11px; min-height: 14px; }
 .loop-row { display: flex; align-items: flex-start; gap: 10px; }
 #pipe-editors {
   display: grid;
@@ -175,8 +204,8 @@ textarea:focus { outline: none; border-color: #f4a261; }
   width: 100%;
 }
 .loop-section {
-  background: #101a33;
-  border: 1px solid #0f3460;
+  background: rgba(8, 22, 13, 0.84);
+  border: 1px solid var(--terminal-line-dim);
   border-radius: 4px;
   padding: 6px;
   min-width: 160px;
@@ -190,37 +219,46 @@ textarea:focus { outline: none; border-color: #f4a261; }
   align-items: center; justify-content: center; gap: 10px;
   padding: 10px;
 }
-canvas { border: 1px solid #0f3460; cursor: pointer; }
+canvas { border: 1px solid var(--terminal-line); cursor: pointer; box-shadow: 0 0 20px rgba(44, 255, 100, 0.1); }
 #controls { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
 button {
-  background: #0f3460; color: #e0e0e0;
-  border: 1px solid #e94560; border-radius: 3px;
+  background: rgba(10, 34, 20, 0.88); color: var(--terminal-text);
+  border: 1px solid var(--terminal-line); border-radius: 3px;
   padding: 5px 12px; cursor: pointer; font-family: monospace; font-size: 12px;
 }
-button:hover { background: #e94560; }
-button.active { background: #e94560; }
-#tick-display, #hit-display { font-size: 13px; color: #f4a261; min-width: 80px; }
-#hit-display { color: #2a9d8f; }
+button:hover { background: rgba(21, 67, 38, 0.92); }
+button.active { background: rgba(30, 92, 52, 0.95); }
+#tick-display, #hit-display { font-size: 13px; color: var(--terminal-green); min-width: 80px; }
+#hit-display { color: var(--terminal-green-soft); }
 
 /* ---- RIGHT PANEL ---- */
 #right-panel {
-  width: 270px; min-width: 270px;
-  background: #16213e;
-  border-left: 1px solid #0f3460;
+  position: fixed;
+  left: 12px;
+  top: 12px;
+  width: 266px; min-width: 266px;
+  height: calc(56vh - 18px);
+  background: var(--terminal-bg-panel);
+  background-image: url('assets/generated/ui_panel_skin.png');
+  background-size: cover;
+  background-position: center;
+  border: 1px solid var(--terminal-line);
+  box-shadow: inset 0 0 0 1px var(--terminal-line-dim), 0 0 24px rgba(53, 255, 120, 0.08);
   padding: 12px; display: flex; flex-direction: column; gap: 10px;
   overflow: hidden;
+  z-index: 31;
 }
-#right-panel h3 { color: #f4a261; font-size: 12px; }
+#right-panel h3 { color: var(--terminal-green); font-size: 12px; }
 .level-btn {
-  background: #0a0a1a; border: 1px solid #0f3460; border-radius: 3px;
-  color: #aaa; padding: 4px 8px; font-size: 11px;
+  background: rgba(5, 16, 9, 0.88); border: 1px solid var(--terminal-line-dim); border-radius: 3px;
+  color: var(--terminal-muted); padding: 4px 8px; font-size: 11px;
   text-align: left; cursor: pointer; font-family: monospace;
   display: block; width: 100%; margin-bottom: 4px;
 }
-.level-btn:hover { border-color: #e94560; color: #e0e0e0; }
-.level-btn.current { border-color: #2a9d8f; color: #2a9d8f; }
-.stat-row { display: flex; justify-content: space-between; color: #555; font-size: 11px; }
-.stat-val { color: #f4a261; }
+.level-btn:hover { border-color: var(--terminal-green-soft); color: var(--terminal-text); }
+.level-btn.current { border-color: var(--terminal-green); color: var(--terminal-green); }
+.stat-row { display: flex; justify-content: space-between; color: var(--terminal-muted); font-size: 11px; }
+.stat-val { color: var(--terminal-green); }
 
 /* ---- SOLUTION POPUP ---- */
 #solution-btn {
@@ -240,6 +278,24 @@ button.active { background: #e94560; }
   justify-content: center;
 }
 #solution-btn:hover { background: #2a9d8f; }
+
+#letter-btn {
+  position: absolute;
+  top: 10px;
+  left: 72px;
+  z-index: 5;
+  border-color: #f4a261;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  padding: 0;
+  font-size: 22px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#letter-btn:hover { background: #f4a261; }
 #solution-overlay {
   display: none;
   position: fixed;
@@ -292,6 +348,122 @@ button.active { background: #e94560; }
 #win-overlay.show { display: flex; }
 #win-overlay div { font-size: 24px; color: #2a9d8f; }
 #win-overlay button { border-color: #2a9d8f; padding: 8px 20px; font-size: 14px; }
+
+/* ---- START / GUIDE / LETTER ---- */
+#start-overlay,
+#guide-overlay,
+#letter-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.72);
+  align-items: center;
+  justify-content: center;
+  z-index: 140;
+}
+#start-overlay.show,
+#guide-overlay.show,
+#letter-overlay.show { display: flex; }
+
+#start-card,
+#guide-card,
+#letter-card {
+  width: min(760px, 92vw);
+  background: #16213e;
+  border: 1px solid #2a9d8f;
+  border-radius: 10px;
+  padding: 16px;
+  color: #e0e0e0;
+}
+
+#start-card {
+  background-image: url('assets/generated/start_screen_bg.png');
+  background-size: cover;
+  background-position: center;
+}
+
+#letter-card {
+  background-image: url('assets/generated/letter_frame.png');
+  background-size: cover;
+  background-position: center;
+}
+
+#start-title {
+  font-size: 44px;
+  color: #2a9d8f;
+  font-weight: bold;
+  letter-spacing: 2px;
+}
+#start-subtitle {
+  margin-top: 8px;
+  color: #aaa;
+  line-height: 1.6;
+}
+#start-actions {
+  margin-top: 16px;
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+#guide-header {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+#guide-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid #2a9d8f;
+  display: grid;
+  place-items: center;
+  color: #2a9d8f;
+  font-size: 22px;
+}
+#guide-role { color: #2a9d8f; }
+#guide-text {
+  background: #101a33;
+  border: 1px solid #0f3460;
+  border-radius: 8px;
+  padding: 12px;
+  line-height: 1.7;
+  min-height: 96px;
+  white-space: pre-wrap;
+}
+#guide-actions {
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+#guide-step-indicator { color: #888; font-size: 11px; }
+
+#letter-title {
+  color: #f4a261;
+  font-size: 18px;
+}
+#letter-object {
+  color: #2a9d8f;
+  font-size: 12px;
+  margin-top: 4px;
+}
+#letter-content {
+  margin-top: 10px;
+  background: #101a33;
+  border: 1px solid #0f3460;
+  border-radius: 8px;
+  padding: 12px;
+  white-space: pre-wrap;
+  line-height: 1.7;
+}
+#letter-actions {
+  margin-top: 10px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
 </style>
 </head>
 <body>
@@ -301,6 +473,7 @@ button.active { background: #e94560; }
       <!-- CENTER: Game Canvas -->
       <div id="canvas-area">
         <button id="solution-btn" onclick="openSolution()" title="查看当前关卡解法">解</button>
+        <button id="letter-btn" onclick="openLetter()" title="阅读本关信件">✉</button>
         <canvas id="canvas" width="600" height="500"></canvas>
         <div id="pipe-editor-layer"></div>
         <!-- 节拍可视化指示器 -->
@@ -344,7 +517,7 @@ button.active { background: #e94560; }
               炮台节奏
             </div>
             <textarea id="turret-loop" rows="2">1---</textarea>
-            <div class="help-text">1=发射 -=静默，循环执行</div>
+            <div class="help-text">1=发射 -=静默；多炮台时按行填写（第1行=炮台1）</div>
           </div>
 
           <div class="loop-section help-text">
@@ -420,6 +593,50 @@ button.active { background: #e94560; }
   <div>🎯 目标达成！</div>
   <div id="win-stats" style="font-size:14px;color:#f4a261"></div>
   <button onclick="resetGame()">再来一次</button>
+</div>
+
+<div id="start-overlay" class="show">
+  <div id="start-card">
+    <div id="start-title">Game Title</div>
+    <div id="start-subtitle">
+      你是一名维修工。每一关会收到一封来信，描述一件坏掉的物品。<br>
+      你的任务是通过节奏与管道，把“洞”填满，让它重新工作。
+    </div>
+    <div id="start-actions">
+      <button onclick="startGame()">开始维修</button>
+    </div>
+  </div>
+</div>
+
+<div id="guide-overlay">
+  <div id="guide-card">
+    <div id="guide-header">
+      <div id="guide-avatar">🔧</div>
+      <div>
+        <div id="guide-role">搭档 阿洛</div>
+        <div style="font-size:11px;color:#777">维修站引导员</div>
+      </div>
+    </div>
+    <div id="guide-text"></div>
+    <div id="guide-actions">
+      <span id="guide-step-indicator"></span>
+      <div>
+        <button onclick="closeGuide()">跳过</button>
+        <button id="guide-next-btn" onclick="nextGuideStep()">下一步</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="letter-overlay" onclick="closeLetter(event)">
+  <div id="letter-card" onclick="event.stopPropagation()">
+    <div id="letter-title"></div>
+    <div id="letter-object"></div>
+    <div id="letter-content"></div>
+    <div id="letter-actions">
+      <button onclick="closeLetter()">读完了，开始维修</button>
+    </div>
+  </div>
 </div>
 
 <script src="engine.js"></script>

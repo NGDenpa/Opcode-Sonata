@@ -32,8 +32,8 @@ function getPipeExit(shape, rotation, entryDir) {
       // At rot=0: opens LEFT(3), RIGHT(1), DOWN(2). UP is closed.
       if (localEntry === 3) localExit = 1;
       else if (localEntry === 1) localExit = 3;
-      // Entering from DOWN turns into one branch; UP stays blocked.
-      else if (localEntry === 2) localExit = 1;
+      // Entering from the stem (DOWN at rot=0) is ambiguous for a single bullet.
+      // Treat as blocked to avoid unrealistic forced turns inside the junction.
       break;
     case '+':
       // All 4 directions pass straight through

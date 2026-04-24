@@ -1,0 +1,135 @@
+[gd_scene format=3 uid="uid://cwrebh3capr4l"]
+
+[ext_resource type="Script" uid="uid://d2nj5d7amtv7f" path="res://scripts/game_scene.gd" id="1_game"]
+[ext_resource type="Script" uid="uid://jqpk1c0ylp3r" path="res://scripts/game_board.gd" id="2_board"]
+[ext_resource type="Script" uid="uid://qb3ddmd0xips" path="res://scripts/spectrum_view.gd" id="3_spectrum"]
+[ext_resource type="Texture2D" uid="uid://dptudgnx28aeo" path="res://ui/ui_panel_skin.png" id="4_panel_full"]
+[ext_resource type="Texture2D" uid="uid://c3g2jhkvnlkia" path="res://ui/play.png" id="6_play"]
+[ext_resource type="Texture2D" uid="uid://b70jsjjmknxhh" path="res://ui/button.png" id="6_utbpp"]
+[ext_resource type="Texture2D" uid="uid://csbi4nf4pjfl8" path="res://ui/loop.png" id="7_loop"]
+
+[node name="GameScene" type="Control" unique_id=1166140879]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_game")
+
+[node name="Background" type="TextureRect" parent="." unique_id=1806570362]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("4_panel_full")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="LevelName" type="Label" parent="." unique_id=381783392]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 49.0
+offset_top = 54.0
+offset_right = 282.0
+offset_bottom = 82.0
+theme_override_font_sizes/font_size = 20
+text = "当前关卡："
+
+[node name="SpectrumView" type="Control" parent="." unique_id=103163094]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(280, 50)
+anchors_preset = 0
+offset_left = 60.0
+offset_top = 324.0
+offset_right = 340.0
+offset_bottom = 374.0
+script = ExtResource("3_spectrum")
+
+[node name="PlayButton" type="Button" parent="." unique_id=1814327608]
+custom_minimum_size = Vector2(0, 64)
+layout_mode = 0
+offset_left = 38.0
+offset_top = 391.0
+offset_right = 102.0
+offset_bottom = 455.0
+size_flags_horizontal = 3
+icon = ExtResource("6_play")
+expand_icon = true
+
+[node name="ResetButton" type="Button" parent="." unique_id=2135409914]
+custom_minimum_size = Vector2(0, 64)
+layout_mode = 0
+offset_left = 102.0
+offset_top = 391.0
+offset_right = 166.0
+offset_bottom = 455.0
+size_flags_horizontal = 3
+icon = ExtResource("7_loop")
+expand_icon = true
+
+[node name="LetterText" type="RichTextLabel" parent="." unique_id=389092732]
+unique_name_in_owner = true
+clip_contents = false
+layout_mode = 0
+offset_left = 68.0
+offset_top = 151.0
+offset_right = 338.0
+offset_bottom = 322.375
+autowrap_mode = 2
+
+[node name="StatusLabel" type="Label" parent="." unique_id=1915654808]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 38.0
+offset_top = 455.0
+offset_right = 348.0
+offset_bottom = 478.0
+text = "状态：就绪"
+
+[node name="StepButton" type="Button" parent="." unique_id=1450466355]
+custom_minimum_size = Vector2(0, 64)
+layout_mode = 0
+offset_left = 166.0
+offset_top = 391.0
+offset_right = 230.0
+offset_bottom = 455.0
+size_flags_horizontal = 3
+icon = ExtResource("6_utbpp")
+expand_icon = true
+
+[node name="Label" type="Label" parent="StepButton" unique_id=1376153663]
+layout_mode = 0
+offset_right = 64.0
+offset_bottom = 64.0
+text = "?"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BoardPanel" type="PanelContainer" parent="." unique_id=1437924733]
+layout_mode = 0
+offset_left = 500.0
+offset_top = 70.0
+offset_right = 990.0
+offset_bottom = 560.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="BoardCenter" type="CenterContainer" parent="BoardPanel" unique_id=1460865041]
+layout_mode = 2
+
+[node name="GameBoard" type="Control" parent="BoardPanel/BoardCenter" unique_id=1059646644]
+unique_name_in_owner = true
+layout_mode = 2
+script = ExtResource("2_board")
+
+[node name="TickTimer" type="Timer" parent="." unique_id=1602440750]
+unique_name_in_owner = true
+wait_time = 0.5
+
+[connection signal="pressed" from="PlayButton" to="." method="_on_play_button_pressed"]
+[connection signal="pressed" from="ResetButton" to="." method="_on_reset_button_pressed"]
+[connection signal="pressed" from="StepButton" to="." method="_on_step_button_pressed"]
+[connection signal="timeout" from="TickTimer" to="." method="_on_tick_timer_timeout"]

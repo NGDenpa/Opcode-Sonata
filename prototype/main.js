@@ -21,6 +21,16 @@ let sfxVolume = 0.7;
 let pipeEditorStateById = new Map(); // pipe.id -> { lines: string[] }
 let pipeEditorWindowsById = new Map(); // pipe.id -> { el: HTMLElement, drag: {dx,dy}|null }
 let pipeEditorZ = 60;
+let gameStarted = false;
+let seenGuideLevels = new Set();
+let seenLetterLevels = new Set();
+let activeGuideSteps = [];
+let activeGuideStepIdx = 0;
+const fxParticles = [];
+const fxTileFrames = [];
+let fxTileFrameIdx = 0;
+let fxTileFrameClock = 0;
+let lastRenderTs = 0;
 
 const LEVEL_SOLUTIONS = {
   0: [
@@ -35,41 +45,56 @@ const LEVEL_SOLUTIONS = {
   ].join('\n'),
   2: [
     "教程 3 解法：",
-    "1) 关键是弯管转到与子弹到达时刻对齐。",
-    "2) 推荐先单步观察 4 个 tick 的循环，再播放。"
+    "1) 两个 L 管先按默认朝向组成固定导流路径。",
+    "2) 如果子弹在拐角被吃弹，优先检查两个 L 的初始方向。"
   ].join('\n'),
   3: [
-    "挑战 - 复杂管道（示例）",
-    "1) 先让三段 L 形成连续导流链。",
-    "2) 炮台节奏建议保留默认，优先通过手动旋转打通主路。",
-    "3) 稳定命中后再微调 loop。"
+    "教程 4 解法：",
+    "1) 先把前段 I 管当作静态中继，只观察后段旋转 L 管的开门时机。",
+    "2) 用 N 单步看子弹到 L 管的到达拍点，再调炮台节奏。"
   ].join('\n'),
   4: [
-    "挑战 - 相邻全类型管网（示例）",
-    "1) 让 + 节点作为中继，不要在早期把流向分散到 T 的侧路。",
-    "2) 先保证一条主通路命中，再利用分支补量。"
+    "教程 5 解法：",
+    "1) + 管在本关作为中继点，先保证主通路稳定命中。",
+    "2) 节奏推荐保持中频，避免场上子弹过多干扰观察。"
   ].join('\n'),
   5: [
-    "挑战 - 全连通岔路（示例）",
-    "1) 岔路多，先锁定一条最短主路。",
-    "2) 用 N 单步观察分叉口，把误导分支暂时封住。",
-    "3) 主路稳定后再打开副路补命中。"
+    "教程 6 解法：",
+    "1) 先打通最短主路，再逐段确认每个转角不会吃弹。",
+    "2) 复杂管道优先看几何路径，再看节奏。"
   ].join('\n'),
   6: [
-    "挑战 - 真假岔路（示例）",
-    "1) 中心 T 管会转向，注意它在 4 tick 循环中的时序。",
-    "2) 子弹到达分叉点时若开向假路会被吃弹。",
-    "3) 先降低发射密度或单步，找到安全节拍后再加速。"
+    "教程 7 解法：",
+    "1) 本关是双炮台双目标：炮台输入框按行对应炮台 1 和炮台 2。",
+    "2) 先让上路稳定命中，再把下路节奏调到刚好补满第二目标。"
+  ].join('\n'),
+  7: [
+    "挑战 8 解法：",
+    "1) 全连通结构先锁定一条稳定主路。",
+    "2) 在岔路口用单步观察，避免子弹进入无效回路。"
+  ].join('\n'),
+  8: [
+    "挑战 9 解法：",
+    "1) 多炮台先调第一行脚本，再调第二行脚本。",
+    "2) 目标显示为总命中/总需求，按总量来判断是否过关。"
+  ].join('\n'),
+  9: [
+    "挑战 10 解法：",
+    "1) 中心 T 管是时序门，先让上路稳定，再补下路。",
+    "2) 建议先把第二炮台降频，再逐步加密到目标节奏。"
   ].join('\n')
 };
 const LEVEL_PIPE_PRESETS = {
   0: [],
   1: ["-"],
-  2: ["R,-,-,-"],
-  3: ["-,-,-,-", "-,-,-,-", "-,-,-,-"],
-  4: ["-", "-", "-", "-", "-", "-"],
-  5: ["-", "-", "-", "-", "-", "-", "-", "-", "-", "-"],
-  6: ["-", "-", "R,-,-,-", "-", "-", "-", "-", "-", "-", "-"]
+  2: ["-,-,-,-", "-,-,-,-"],
+  3: ["-,-,-,-", "R,-,-,-"],
+  4: ["-,-,-,-,-,-", "-,-,-,-,-,-", "-,-,-,-,-,-"],
+  5: ["-,-,-,-", "-,-,-,-", "-,-,-,-"],
+  6: ["-,-,-,-,-,-,-,-", "-,-,-,-,-,-,-,-", "-,-,-,-,-,-,-,-", "-,-,-,-,-,-,-,-"],
+  7: ["-", "-", "-", "-", "-", "-", "-", "-", "-", "-"],
+  8: ["-", "-", "-", "-", "-", "-", "-", "-", "-", "-", "-", "-"],
+  9: ["-", "-", "R,-,-,-,L,-,-,-", "-", "-", "-", "-", "-", "-", "-", "-", "-", "-", "-"]
 };
 
 function normalizePipeToken(tok) {
@@ -78,7 +103,43 @@ function normalizePipeToken(tok) {
   return null;
 }
 
+function getTurretLoopLength(script) {
+  const clean = String(script || '').replace(/\s/g, '');
+  return Math.max(1, clean.length || 1);
+}
+
+function normalizeTurretScript(script, len) {
+  const targetLen = Math.max(1, Math.floor(len || 1));
+  return String(script || '')
+    .replace(/\s/g, '')
+    .split('')
+    .slice(0, targetLen)
+    .map(ch => ch === '1' ? '1' : '-')
+    .join('')
+    .padEnd(targetLen, '-');
+}
+
+function getTurretScriptsFromEditor() {
+  const turretInputEl = document.getElementById('turret-loop');
+  const lines = String(turretInputEl?.value || '')
+    .split(/\r?\n/)
+    .map(s => s.trim())
+    .filter(Boolean);
+  return lines.length > 0 ? lines : ['1---'];
+}
+
+function getLevelUnifiedLoopLength(level) {
+  if (level && Number.isFinite(level.loopLength)) {
+    return Math.max(1, Math.floor(level.loopLength));
+  }
+  const turretLoops = (level?.turrets || []).map(t => t?.loop || '').filter(Boolean);
+  if (turretLoops.length === 0) return 4;
+  return turretLoops.reduce((maxLen, loop) => Math.max(maxLen, getTurretLoopLength(loop)), 1);
+}
+
 function getPipeRowCountForLevel(level, pipe) {
+  const unifiedRows = getLevelUnifiedLoopLength(level);
+  if (unifiedRows) return unifiedRows;
   const lvRows = level && Number.isFinite(level.pipeRows) ? Math.max(1, Math.floor(level.pipeRows)) : null;
   if (lvRows) return lvRows;
   const parts = String(pipe?.loopScript || pipe?.loop || '-').split(',').map(s => s.trim()).filter(Boolean);
@@ -409,12 +470,97 @@ window.addEventListener('DOMContentLoaded', () => {
 
   buildLevelButtons();
   loadLevel(0);
+  loadFxTileFrames();
 
   canvas.addEventListener('click', onCanvasClick);
   document.addEventListener('keydown', onKey);
 
   requestAnimationFrame(renderLoop);
 });
+
+function loadFxTileFrames() {
+  const maxFrames = 24;
+  for (let i = 0; i < maxFrames; i++) {
+    const img = new Image();
+    img.src = `assets/generated/fx/fx_frame_${String(i).padStart(3, '0')}.png`;
+    fxTileFrames.push(img);
+  }
+}
+
+function startGame() {
+  gameStarted = true;
+  const start = document.getElementById('start-overlay');
+  if (start) start.classList.remove('show');
+  maybeShowLevelIntro();
+}
+
+function getCurrentLevelStory() {
+  const level = LEVELS[currentLevelIdx] || {};
+  return {
+    objectName: level.objectName || level.name || "维修物件",
+    letterTitle: level.letterTitle || `维修委托：${level.name || "未知关卡"}`,
+    letterBody: level.letterBody || "这是一份普通维修委托。请把所有洞填满，让物件重新工作。",
+    guideSteps: Array.isArray(level.guideSteps) ? level.guideSteps : [],
+    theme: level.theme || ''
+  };
+}
+
+function openLetter() {
+  const story = getCurrentLevelStory();
+  document.getElementById('letter-title').textContent = story.letterTitle;
+  document.getElementById('letter-object').textContent = `维修对象：${story.objectName}`;
+  document.getElementById('letter-content').textContent = story.letterBody;
+  document.getElementById('letter-overlay').classList.add('show');
+}
+
+function closeLetter(e) {
+  if (e && e.target && e.target.id !== 'letter-overlay') return;
+  document.getElementById('letter-overlay').classList.remove('show');
+}
+
+function openGuideForCurrentLevel() {
+  const story = getCurrentLevelStory();
+  if (!story.guideSteps || story.guideSteps.length === 0) return false;
+  activeGuideSteps = story.guideSteps;
+  activeGuideStepIdx = 0;
+  renderGuideStep();
+  document.getElementById('guide-overlay').classList.add('show');
+  return true;
+}
+
+function renderGuideStep() {
+  const total = activeGuideSteps.length;
+  const idx = Math.max(0, Math.min(total - 1, activeGuideStepIdx));
+  const text = activeGuideSteps[idx] || '';
+  document.getElementById('guide-text').textContent = text;
+  document.getElementById('guide-step-indicator').textContent = `引导 ${idx + 1} / ${total}`;
+  document.getElementById('guide-next-btn').textContent = idx >= total - 1 ? '完成' : '下一步';
+}
+
+function nextGuideStep() {
+  if (activeGuideStepIdx >= activeGuideSteps.length - 1) {
+    closeGuide();
+    return;
+  }
+  activeGuideStepIdx++;
+  renderGuideStep();
+}
+
+function closeGuide() {
+  document.getElementById('guide-overlay').classList.remove('show');
+  seenGuideLevels.add(currentLevelIdx);
+}
+
+function maybeShowLevelIntro() {
+  if (!gameStarted) return;
+  if (!seenLetterLevels.has(currentLevelIdx)) {
+    openLetter();
+    seenLetterLevels.add(currentLevelIdx);
+  }
+  if (!seenGuideLevels.has(currentLevelIdx)) {
+    openGuideForCurrentLevel();
+  }
+}
 
 // 初始化节拍可视化器
 function initBeatVisualizer() {
@@ -546,8 +692,10 @@ function loadLevel(idx) {
   canvas.width  = game.cols * game.cellSize;
   canvas.height = game.rows * game.cellSize;
 
-  // Sync turret editor
-  document.getElementById('turret-loop').value = game.turrets[0]?.loopScript || '1---';
+  // Sync turret editor (one line per turret)
+  const turretInputEl = document.getElementById('turret-loop');
+  const turretLines = game.turrets.map(t => t.loopScript || '1---');
+  turretInputEl.value = turretLines.length > 0 ? turretLines.join('\n') : '1---';
 
   // Rebuild pipe editors
   const container = document.getElementById('pipe-editors');
@@ -579,9 +727,10 @@ function loadLevel(idx) {
   document.getElementById('rate-label').textContent = game.tickRate + 'ms';
   setSolutionText();
   lastBulletCount = game.bullets.length;
-  lastHitCount = game.targets[0]?.hits || 0;
+  lastHitCount = game.targets.reduce((sum, t) => sum + (t.hits || 0), 0);
 
   updateUI();
+  maybeShowLevelIntro();
 }
 
 // ============================================================
@@ -589,8 +738,33 @@ function loadLevel(idx) {
 // ============================================================
 function applyScripts() {
   ensureAudio();
-  const turretScript = document.getElementById('turret-loop').value.trim();
-  if (game.turrets[0]) game.turrets[0].setLoop(turretScript);
+  const turretInputEl = document.getElementById('turret-loop');
+  const turretScriptsRaw = getTurretScriptsFromEditor();
+  const unifiedLen = turretScriptsRaw.reduce((maxLen, script) => Math.max(maxLen, getTurretLoopLength(script)), 1);
+  const normalizedTurretScripts = game.turrets.map((_, idx) => {
+    const raw = turretScriptsRaw[idx] ?? turretScriptsRaw[turretScriptsRaw.length - 1] ?? '1---';
+    return normalizeTurretScript(raw, unifiedLen);
+  });
+  turretInputEl.value = normalizedTurretScripts.join('\n');
+  game.turrets.forEach((turret, idx) => {
+    turret.setLoop(normalizedTurretScripts[idx] || '-'.repeat(unifiedLen));
+  });
+
+  // 统一所有水管脚本长度到炮台 loop 长度，降低 loop 对齐成本
+  game.pipes.forEach((pipe) => {
+    const level = LEVELS[currentLevelIdx];
+    const state = getOrInitPipeEditorState(pipe, level);
+    if (!state || !Array.isArray(state.lines)) return;
+    const next = [];
+    for (let i = 0; i < unifiedLen; i++) {
+      next.push(state.lines[i] ?? '-');
+    }
+    state.lines = next;
+    const winEntry = pipeEditorWindowsById.get(pipe.id);
+    if (winEntry && winEntry.el && winEntry.el.style.display !== 'none') {
+      openPipeEditor(pipe);
+    }
+  });
 
   const res = validateAllPipesAndCollectScripts();
   if (!res.ok) {
@@ -809,26 +983,48 @@ function updateUI() {
 
   if (game.bullets.length > lastBulletCount) {
     playFireSound();
+    game.turrets.forEach((t) => {
+      if (t.flash > 0) {
+        spawnBurstParticles(
+          t.col * game.cellSize + game.cellSize / 2,
+          t.row * game.cellSize + game.cellSize / 2,
+          '#ffd166',
+          5
+        );
+      }
+    });
   }
   lastBulletCount = game.bullets.length;
 
-  const target = game.targets[0];
-  if (target) {
-    document.getElementById('hit-display').textContent = `命中: ${target.hits} / ${target.required}`;
-    if (target.hits > lastHitCount) {
-      // 只有击中目标时波形图才动（并且每个音风格不同）
-      triggerBeatJump(`hit:${target.hits}`);
-      const ok = playHitMelodyNote(target.hits - 1);
-      if (!ok) playHitSound();
+  const totalHits = game.targets.reduce((sum, t) => sum + (t.hits || 0), 0);
+  const totalRequired = game.targets.reduce((sum, t) => sum + (t.required || 0), 0);
+  document.getElementById('hit-display').textContent = `命中: ${totalHits} / ${totalRequired || '?'}`;
+  if (totalHits > lastHitCount) {
+    // 只有击中目标时波形图才动（并且每个音风格不同）
+    triggerBeatJump(`hit:${totalHits}`);
+    const ok = playHitMelodyNote(totalHits - 1);
+    if (!ok) playHitSound();
+    const t = game.targets.find(x => x.hits > 0) || game.targets[0];
+    if (t) {
+      spawnBurstParticles(
+        t.col * game.cellSize + game.cellSize / 2,
+        t.row * game.cellSize + game.cellSize / 2,
+        '#80ed99',
+        14
+      );
     }
-    lastHitCount = target.hits;
   }
+  lastHitCount = totalHits;
 }
 
 // ============================================================
 // RENDER LOOP
 // ============================================================
 function renderLoop() {
+  const now = performance.now();
+  const dt = lastRenderTs > 0 ? (now - lastRenderTs) : 16.6;
+  lastRenderTs = now;
+  updateFx(dt);
   render();
   // DOM 波形图按帧刷新，用于“一帧后回默认”的闪动效果
   updateBeatVisualizer();
@@ -840,11 +1036,119 @@ function render() {
   ctx.fillStyle = '#1a1a2e';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+  drawLevelThemeFrame(cs);
+  drawFxTiledOverlay();
   drawGrid(cs);
   drawTargets(cs);
   drawPipes(cs);
   drawTurrets(cs);
   drawBullets(cs);
+  drawFxParticles();
+}
+
+function updateFx(dtMs) {
+  fxTileFrameClock += dtMs;
+  if (fxTileFrameClock >= 85) {
+    fxTileFrameClock = 0;
+    if (fxTileFrames.length > 0) {
+      fxTileFrameIdx = (fxTileFrameIdx + 1) % fxTileFrames.length;
+    }
+  }
+
+  for (let i = fxParticles.length - 1; i >= 0; i--) {
+    const p = fxParticles[i];
+    p.life -= dtMs / 1000;
+    if (p.life <= 0) {
+      fxParticles.splice(i, 1);
+      continue;
+    }
+    p.x += p.vx * (dtMs / 1000);
+    p.y += p.vy * (dtMs / 1000);
+    p.vx *= 0.985;
+    p.vy *= 0.985;
+  }
+}
+
+function drawFxTiledOverlay() {
+  const frame = fxTileFrames[fxTileFrameIdx];
+  if (!frame || !frame.complete || frame.naturalWidth === 0) return;
+  const tileW = Math.max(160, Math.floor(canvas.width / 2));
+  const tileH = Math.max(120, Math.floor(canvas.height / 2));
+  ctx.save();
+  ctx.globalAlpha = 0.1;
+  for (let x = 0; x < canvas.width; x += tileW) {
+    for (let y = 0; y < canvas.height; y += tileH) {
+      ctx.drawImage(frame, x, y, tileW, tileH);
+    }
+  }
+  ctx.restore();
+}
+
+function spawnBurstParticles(x, y, color, count) {
+  for (let i = 0; i < count; i++) {
+    const a = Math.random() * Math.PI * 2;
+    const speed = 22 + Math.random() * 80;
+    fxParticles.push({
+      x,
+      y,
+      vx: Math.cos(a) * speed,
+      vy: Math.sin(a) * speed,
+      life: 0.22 + Math.random() * 0.45,
+      color: color || '#f4a261',
+      size: 1.6 + Math.random() * 2.8
+    });
+  }
+}
+
+function drawFxParticles() {
+  if (fxParticles.length === 0) return;
+  ctx.save();
+  for (const p of fxParticles) {
+    const alpha = Math.max(0, Math.min(1, p.life / 0.6));
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = p.color;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+function drawLevelThemeFrame(cs) {
+  const story = getCurrentLevelStory();
+  ctx.save();
+  ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(8, 8, canvas.width - 16, canvas.height - 16);
+
+  if (story.theme === 'cassette') {
+    const cx = canvas.width * 0.5;
+    const cy = canvas.height * 0.48;
+    ctx.strokeStyle = 'rgba(230,230,230,0.2)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(cx, cy, cs * 1.1, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(cx, cy, cs * 0.45, 0, Math.PI * 2);
+    ctx.stroke();
+  } else if (story.theme === 'record') {
+    const cx = canvas.width * 0.52;
+    const cy = canvas.height * 0.48;
+    ctx.strokeStyle = 'rgba(230,230,230,0.2)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(cx, cy, cs * 2.6, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(cx, cy, cs * 0.7, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(cx - cs * 1.6, cy + cs * 1.5);
+    ctx.lineTo(cx + cs * 1.9, cy + cs * 1.1);
+    ctx.stroke();
+  }
+  ctx.restore();
 }
 
 function drawGrid(cs) {

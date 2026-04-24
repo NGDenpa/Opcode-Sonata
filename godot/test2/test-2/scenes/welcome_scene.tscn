@@ -1,0 +1,46 @@
+[gd_scene format=3 uid="uid://ddg34dobmjl4c"]
+
+[ext_resource type="Script" uid="uid://bq7ys2iig7yky" path="res://scripts/welcome_scene.gd" id="1_welcome"]
+[ext_resource type="Texture2D" uid="uid://bu0jaltn66enh" path="res://ui/title.png" id="2_title"]
+[ext_resource type="Texture2D" uid="uid://odqtj20aag5i" path="res://ui/play_title.png" id="3_play_title"]
+
+[node name="WelcomeScene" type="Control" unique_id=700172971]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_welcome")
+
+[node name="BannerImage" type="TextureRect" parent="." unique_id=193915639]
+custom_minimum_size = Vector2(520, 120)
+layout_mode = 0
+offset_right = 1152.0
+offset_bottom = 648.0
+texture = ExtResource("2_title")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Background" type="TextureRect" parent="." unique_id=1067860597]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+stretch_mode = 6
+
+[node name="StartButton" type="TextureButton" parent="." unique_id=1300162634]
+custom_minimum_size = Vector2(88, 88)
+layout_mode = 0
+offset_left = 534.0
+offset_top = 370.0
+offset_right = 631.0
+offset_bottom = 521.0
+texture_normal = ExtResource("3_play_title")
+ignore_texture_size = true
+stretch_mode = 0
+
+[connection signal="pressed" from="StartButton" to="." method="_on_start_button_pressed"]
