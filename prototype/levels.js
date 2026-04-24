@@ -171,5 +171,28 @@ const LEVELS = [
     targets: [
       { col: 8, row: 5, required: 7 }
     ]
+  },
+
+  // FX Test: pipe editor popup (3 pipes, each 4 lines)
+  {
+    name: "测试 - 水管编辑窗口",
+    cols: 10,
+    rows: 10,
+    bpm: 110,
+    tickRate: 420,
+    hitMelody: "CCGGAAG",
+    hitOctave: 4,
+    pipeRows: 4,
+    turrets: [
+      { col: 1, row: 5, dir: DIR.RIGHT, loop: "1-1-1-1-1-1-1-" }
+    ],
+    pipes: [
+      { col: 4, row: 5, shape: 'I', rotation: 90, loop: "-,-,-,-" },
+      { col: 6, row: 5, shape: 'L', rotation: 180, loop: "-,-,-,-" },
+      { col: 6, row: 7, shape: 'I', rotation: 0, loop: "-,-,-,-" }
+    ],
+    targets: [
+      { col: 8, row: 7, required: 7 }
+    ]
   }
 ];

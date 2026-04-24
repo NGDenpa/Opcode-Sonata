@@ -18,6 +18,10 @@ let lastBulletCount = 0;
 let lastHitCount = 0;
 let sfxEnabled = true;
 let sfxVolume = 0.7;
+let pipeEditorStateById = new Map(); // pipe.id -> { lines: string[] }
+let pipeEditorWindowsById = new Map(); // pipe.id -> { el: HTMLElement, drag: {dx,dy}|null }
+let pipeEditorZ = 60;
+
 const LEVEL_SOLUTIONS = {
   0: [
     "教程 1 解法：",
@@ -67,6 +71,217 @@ const LEVEL_PIPE_PRESETS = {
   5: ["-", "-", "-", "-", "-", "-", "-", "-", "-", "-"],
   6: ["-", "-", "R,-,-,-", "-", "-", "-", "-", "-", "-", "-"]
 };
+
+function normalizePipeToken(tok) {
+  const t = String(tok || '').trim().toUpperCase();
+  if (t === 'R' || t === 'L' || t === '-') return t;
+  return null;
+}
+
+function getPipeRowCountForLevel(level, pipe) {
+  const lvRows = level && Number.isFinite(level.pipeRows) ? Math.max(1, Math.floor(level.pipeRows)) : null;
+  if (lvRows) return lvRows;
+  const parts = String(pipe?.loopScript || pipe?.loop || '-').split(',').map(s => s.trim()).filter(Boolean);
+  return Math.max(1, Math.min(12, parts.length || 1));
+}
+
+function getOrInitPipeEditorState(pipe, level) {
+  if (!pipe) return null;
+  const existing = pipeEditorStateById.get(pipe.id);
+  const rows = getPipeRowCountForLevel(level, pipe);
+  if (existing && Array.isArray(existing.lines) && existing.lines.length === rows) return existing;
+
+  const fromScript = String(pipe.loopScript || '-').split(',').map(s => s.trim());
+  const lines = [];
+  for (let i = 0; i < rows; i++) {
+    const tok = normalizePipeToken(fromScript[i] ?? '-');
+    lines.push(tok || '-');
+  }
+  const state = { lines };
+  pipeEditorStateById.set(pipe.id, state);
+  return state;
+}
+
+function getPipeEditorLayer() {
+  return document.getElementById('pipe-editor-layer');
+}
+
+function bringPipeWindowToFront(winEl) {
+  pipeEditorZ++;
+  winEl.style.zIndex = String(pipeEditorZ);
+}
+
+function ensurePipeEditorWindowForPipe(pipe) {
+  if (!pipe) return null;
+  const existing = pipeEditorWindowsById.get(pipe.id);
+  if (existing && existing.el) return existing.el;
+
+  const layer = getPipeEditorLayer();
+  if (!layer) return null;
+
+  const win = document.createElement('div');
+  win.className = 'pipe-editor-window';
+  win.style.display = 'none';
+  win.style.left = '20px';
+  win.style.top = '20px';
+  win.style.zIndex = String(++pipeEditorZ);
+  win.setAttribute('data-pipe-id', String(pipe.id));
+  win.innerHTML = `
+    <div class="pipe-editor-header">
+      <div class="pipe-editor-title"></div>
+      <button class="pipe-editor-close" title="关闭">×</button>
+    </div>
+    <div class="pipe-editor-body"></div>
+  `;
+  layer.appendChild(win);
+
+  pipeEditorWindowsById.set(pipe.id, { el: win, drag: null });
+
+  // close
+  const closeBtn = win.querySelector('.pipe-editor-close');
+  closeBtn.addEventListener('pointerdown', (e) => {
+    // Prevent header drag from capturing pointer
+    e.stopPropagation();
+  });
+  closeBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    closePipeEditor(pipe.id);
+  });
+
+  // drag
+  const header = win.querySelector('.pipe-editor-header');
+  header.addEventListener('pointerdown', (e) => {
+    if (e.target && e.target.closest && e.target.closest('.pipe-editor-close')) return;
+    const entry = pipeEditorWindowsById.get(pipe.id);
+    if (!entry || !entry.el) return;
+    const rect = entry.el.getBoundingClientRect();
+    entry.drag = { dx: e.clientX - rect.left, dy: e.clientY - rect.top };
+    bringPipeWindowToFront(entry.el);
+    header.setPointerCapture(e.pointerId);
+  });
+  header.addEventListener('pointermove', (e) => {
+    const entry = pipeEditorWindowsById.get(pipe.id);
+    if (!entry || !entry.drag || !entry.el) return;
+    const layerRect = layer.getBoundingClientRect();
+    const x = e.clientX - layerRect.left - entry.drag.dx;
+    const y = e.clientY - layerRect.top - entry.drag.dy;
+    entry.el.style.left = `${Math.max(0, Math.min(layerRect.width - 40, x))}px`;
+    entry.el.style.top = `${Math.max(0, Math.min(layerRect.height - 40, y))}px`;
+  });
+  header.addEventListener('pointerup', () => {
+    const entry = pipeEditorWindowsById.get(pipe.id);
+    if (entry) entry.drag = null;
+  });
+  header.addEventListener('pointercancel', () => {
+    const entry = pipeEditorWindowsById.get(pipe.id);
+    if (entry) entry.drag = null;
+  });
+
+  // click to front
+  win.addEventListener('pointerdown', () => bringPipeWindowToFront(win));
+
+  return win;
+}
+
+function openPipeEditor(pipe, opts = {}) {
+  const level = LEVELS[currentLevelIdx];
+  const win = ensurePipeEditorWindowForPipe(pipe);
+  if (!win || !pipe) return;
+
+  const state = getOrInitPipeEditorState(pipe, level);
+  bringPipeWindowToFront(win);
+
+  const title = win.querySelector('.pipe-editor-title');
+  const body = win.querySelector('.pipe-editor-body');
+  title.textContent = `水管 ${pipe.id + 1}（${pipe.shape}）`;
+
+  body.innerHTML = '';
+  state.lines.forEach((val, idx) => {
+    const row = document.createElement('div');
+    row.className = 'pipe-editor-row';
+    row.innerHTML = `
+      <div class="pipe-editor-idx">${idx + 1}</div>
+      <input class="pipe-editor-input" data-line-idx="${idx}" inputmode="text" maxlength="1" value="${val}">
+    `;
+    body.appendChild(row);
+  });
+
+  body.querySelectorAll('.pipe-editor-input').forEach((input) => {
+    input.addEventListener('input', () => {
+      const i = parseInt(input.getAttribute('data-line-idx'), 10);
+      const tok = normalizePipeToken(input.value);
+      if (tok) {
+        input.value = tok;
+        input.classList.remove('error', 'error-blink');
+        state.lines[i] = tok;
+      } else {
+        // keep user's raw, but mark error (will be rejected on Apply)
+        state.lines[i] = String(input.value || '').trim();
+      }
+    });
+    input.addEventListener('blur', () => {
+      const tok = normalizePipeToken(input.value);
+      if (!tok) input.classList.add('error');
+    });
+  });
+
+  win.style.display = 'block';
+
+  if (opts && opts.anchorClientX != null && opts.anchorClientY != null) {
+    const layer = getPipeEditorLayer();
+    const layerRect = layer.getBoundingClientRect();
+    const x = (opts.anchorClientX - layerRect.left) + 10;
+    const y = (opts.anchorClientY - layerRect.top) + 10;
+    win.style.left = `${Math.max(0, Math.min(layerRect.width - 260, x))}px`;
+    win.style.top = `${Math.max(0, Math.min(layerRect.height - 220, y))}px`;
+  }
+}
+
+function closePipeEditor(pipeId) {
+  if (pipeId == null) return;
+  const entry = pipeEditorWindowsById.get(pipeId);
+  if (!entry || !entry.el) return;
+  entry.el.style.display = 'none';
+}
+
+function validateAllPipesAndCollectScripts() {
+  const level = LEVELS[currentLevelIdx];
+  const errors = []; // { pipe, badLineIdxs:number[] }
+  const scriptsByPipeId = new Map(); // id -> script string
+
+  game.pipes.forEach((pipe) => {
+    const state = getOrInitPipeEditorState(pipe, level);
+    const bad = [];
+    const normalized = [];
+    state.lines.forEach((raw, idx) => {
+      const tok = normalizePipeToken(raw);
+      if (!tok) bad.push(idx);
+      normalized.push(tok || raw);
+    });
+    if (bad.length > 0) {
+      errors.push({ pipe, badLineIdxs: bad });
+    } else {
+      scriptsByPipeId.set(pipe.id, normalized.join(','));
+    }
+  });
+  return { ok: errors.length === 0, errors, scriptsByPipeId };
+}
+
+function flashPipeEditorErrors(pipe, badLineIdxs) {
+  if (!pipe) return;
+  openPipeEditor(pipe);
+  const win = ensurePipeEditorWindowForPipe(pipe);
+  if (!win) return;
+  const inputs = win.querySelectorAll('.pipe-editor-input');
+  badLineIdxs.forEach((i) => {
+    const el = Array.from(inputs).find(x => parseInt(x.getAttribute('data-line-idx'), 10) === i);
+    if (!el) return;
+    el.classList.add('error', 'error-blink');
+    // Remove blink class after animation to allow re-trigger
+    setTimeout(() => el.classList.remove('error-blink'), 1700);
+  });
+}
 
 function ensureAudio() {
   if (!audioCtx) {
@@ -337,17 +552,15 @@ function loadLevel(idx) {
   // Rebuild pipe editors
   const container = document.getElementById('pipe-editors');
   container.innerHTML = '';
-  game.pipes.forEach((pipe, i) => {
-    const block = document.createElement('div');
-    block.className = 'editor-block';
-    block.innerHTML = `
-      <div class="entity-label">
-        <span class="dot" style="background:#0f3460;border:1px solid #4a90d9"></span>
-        水管 ${i + 1} (${pipe.shape})
-      </div>
-      <textarea id="pipe-loop-${i}" rows="2">${pipe.loopScript}</textarea>
-    `;
-    container.appendChild(block);
+  // New UI: per-pipe popup editor. Keep legacy area empty/hidden.
+  pipeEditorStateById.clear();
+  // Drop old windows (new ones will be created lazily on click)
+  pipeEditorWindowsById.forEach((entry) => {
+    if (entry && entry.el && entry.el.parentNode) entry.el.parentNode.removeChild(entry.el);
+  });
+  pipeEditorWindowsById.clear();
+  game.pipes.forEach((pipe) => {
+    getOrInitPipeEditorState(pipe, level);
   });
 
   // Highlight current level button
@@ -379,9 +592,21 @@ function applyScripts() {
   const turretScript = document.getElementById('turret-loop').value.trim();
   if (game.turrets[0]) game.turrets[0].setLoop(turretScript);
 
-  game.pipes.forEach((pipe, i) => {
-    const el = document.getElementById(`pipe-loop-${i}`);
-    if (el) pipe.setLoop(el.value.trim());
+  const res = validateAllPipesAndCollectScripts();
+  if (!res.ok) {
+    res.errors.forEach((err) => {
+      flashPipeEditorErrors(err.pipe, err.badLineIdxs);
+    });
+    document.getElementById('status').textContent = '存在无效指令：只能是 R / L / -（每行必须填写）';
+    setTimeout(() => {
+      document.getElementById('status').textContent = '就绪';
+    }, 1800);
+    return;
+  }
+
+  game.pipes.forEach((pipe) => {
+    const script = res.scriptsByPipeId.get(pipe.id);
+    if (script != null) pipe.setLoop(script);
   });
 
   // Reset state but keep layout
@@ -460,8 +685,13 @@ function onCanvasClick(e) {
   const row = Math.floor((e.clientY - rect.top)   / game.cellSize);
   const pipe = game.getPipeAt(col, row);
   if (pipe) {
-    pipe.manualRotate(e.shiftKey ? -90 : 90);
-    playRotateSound();
+    // New behavior: click opens editor; Shift+click rotates (keep original rotate affordance)
+    if (e.shiftKey) {
+      pipe.manualRotate(e.shiftKey ? -90 : 90);
+      playRotateSound();
+    } else {
+      openPipeEditor(pipe, { anchorClientX: e.clientX, anchorClientY: e.clientY });
+    }
   }
 }
 
@@ -547,9 +777,20 @@ function fillPipePreset() {
     return;
   }
 
+  const level = LEVELS[currentLevelIdx];
   preset.forEach((script, i) => {
-    const el = document.getElementById(`pipe-loop-${i}`);
-    if (el) el.value = script;
+    const pipe = game.pipes[i];
+    if (!pipe) return;
+    const state = getOrInitPipeEditorState(pipe, level);
+    const parts = String(script || '').split(',').map(s => s.trim());
+    for (let k = 0; k < state.lines.length; k++) {
+      const tok = normalizePipeToken(parts[k] ?? '-');
+      state.lines[k] = tok || '-';
+    }
+    const winEntry = pipeEditorWindowsById.get(pipe.id);
+    if (winEntry && winEntry.el && winEntry.el.style.display !== 'none') {
+      openPipeEditor(pipe);
+    }
   });
 
   document.getElementById('status').textContent = '已填入水管方案 ✓';
