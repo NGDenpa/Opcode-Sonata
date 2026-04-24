@@ -3,6 +3,12 @@
 [ext_resource type="Script" uid="uid://bq7ys2iig7yky" path="res://scripts/welcome_scene.gd" id="1_welcome"]
 [ext_resource type="Texture2D" uid="uid://bu0jaltn66enh" path="res://ui/title.png" id="2_title"]
 [ext_resource type="Texture2D" uid="uid://odqtj20aag5i" path="res://ui/play_title.png" id="3_play_title"]
+[ext_resource type="Texture2D" uid="uid://fvoqpgcaxrpm" path="res://ui/play_title_pressed.png" id="4_5hhb8"]
+[ext_resource type="Texture2D" uid="uid://dq3pqsw4q7a4j" path="res://ui/next1_title.png" id="4_i3k6d"]
+[ext_resource type="Texture2D" uid="uid://bv2yuuk0g66p6" path="res://ui/play_title_hover.png" id="5_45xs0"]
+[ext_resource type="Texture2D" uid="uid://bm4ci6iut15n8" path="res://ui/like.png" id="5_qhx7g"]
+[ext_resource type="Texture2D" uid="uid://cgym44j4qh5u8" path="res://ui/like_title_pressed.png" id="7_b1nxc"]
+[ext_resource type="Texture2D" uid="uid://bhbnd2pdbj5b2" path="res://ui/like_title_hover.png" id="9_2wccb"]
 
 [node name="WelcomeScene" type="Control" unique_id=700172971]
 layout_mode = 3
@@ -40,7 +46,41 @@ offset_top = 370.0
 offset_right = 631.0
 offset_bottom = 521.0
 texture_normal = ExtResource("3_play_title")
+texture_pressed = ExtResource("4_5hhb8")
+texture_hover = ExtResource("5_45xs0")
 ignore_texture_size = true
 stretch_mode = 0
 
+[node name="TextureRect" type="TextureRect" parent="." unique_id=639671067]
+layout_mode = 0
+offset_left = 690.0
+offset_top = 415.99997
+offset_right = 766.0
+offset_bottom = 505.99997
+scale = Vector2(0.6218182, 0.6490909)
+texture = ExtResource("4_i3k6d")
+
+[node name="TextureRect2" type="TextureRect" parent="." unique_id=113341525]
+layout_mode = 0
+offset_left = 416.00006
+offset_top = 415.99997
+offset_right = 492.00006
+offset_bottom = 505.99997
+scale = Vector2(0.6218182, 0.6490909)
+texture = ExtResource("4_i3k6d")
+flip_h = true
+
+[node name="like" type="TextureButton" parent="." unique_id=265809326]
+layout_mode = 0
+offset_left = 794.0
+offset_top = 374.99997
+offset_right = 1028.0
+offset_bottom = 593.0
+scale = Vector2(0.6218182, 0.6490909)
+texture_normal = ExtResource("5_qhx7g")
+texture_pressed = ExtResource("7_b1nxc")
+texture_hover = ExtResource("9_2wccb")
+flip_h = true
+
 [connection signal="pressed" from="StartButton" to="." method="_on_start_button_pressed"]
+[connection signal="pressed" from="like" to="." method="like"]
