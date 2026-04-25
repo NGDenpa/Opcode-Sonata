@@ -1,12 +1,27 @@
 extends Control
 
+const DESIGN_SIZE := Vector2(2048.0, 1152.0)
+const MP3_BOARD_RECT := Rect2(Vector2(732.0, 137.0), Vector2(875.0, 835.0))
+const CHANGPIAN_BOARD_RECT := Rect2(Vector2(898.0, 130.0), Vector2(845.0, 845.0))
+const CIDAI_BOARD_RECT := Rect2(Vector2(762.0, 146.0), Vector2(1108.0, 820.0))
+
+@onready var board_panel: Control = $BoardPanel
 @onready var board: GameBoard = %GameBoard
+@onready var story_mask: TextureRect = %StoryMask
 @onready var letter_text: RichTextLabel = %LetterText
 @onready var level_name_label: Label = %LevelName
+@onready var to_fill_label: Label = %ToFill
 @onready var spectrum: SpectrumView = %SpectrumView
 @onready var tick_timer: Timer = %TickTimer
 @onready var status_label: Label = %StatusLabel
 @onready var turret_action_track: TurretActionTrack = %TurretActionTrack
+@onready var play_button: Button = $PlayButton
+@onready var reset_button: Button = $ResetButton
+@onready var help_button: Button = $HelpButton
+@onready var step_button: Button = $StepButton
+@onready var prev_level_button: Button = %PrevLevelButton
+@onready var next_level_nav_button: Button = %NextLevelNavButton
+@onready var home_button: Button = %HomeButton
 @onready var win_overlay: ColorRect = $WinOverlay
 @onready var win_hint: Label = %WinHint
 @onready var guide_overlay: ColorRect = $GuideOverlay
@@ -15,35 +30,46 @@ extends Control
 @onready var guide_text: RichTextLabel = %GuideText
 @onready var guide_ok_button: Button = $GuideOverlay/GuideCard/GuideVBox/GuideOkButton
 @onready var pipe_editor: PipeEditorLayer = $PipeEditorLayer
+@onready var sound_fx: SoundFx = $SoundFx
 
 var logic := GameLogic.new()
 var levels: Array = []
 var current_level_idx: int = 0
 var playing: bool = false
 var shown_guides := {}
+var current_mask_name := ""
+var _last_total_hits := 0
 
 func _ready() -> void:
 	_apply_terminal_popup_styles()
+	resized.connect(_layout_board_panel)
 	levels = LevelData.all_levels()
 	board.logic = logic
 	board.pipe_clicked.connect(_on_board_pipe_clicked)
 	pipe_editor.pipe_script_applied.connect(_on_pipe_script_applied)
-	_load_level(0)
+	_bind_all_icon_button_fx()
+	_layout_board_panel()
+	_load_level(GameProgress.requested_level)
 
 func _load_level(idx: int) -> void:
 	current_level_idx = clampi(idx, 0, levels.size() - 1)
 	var level: Dictionary = levels[current_level_idx]
 	logic.load_level(level)
+	board.grid_cols = logic.cols
+	board.grid_rows = logic.rows
 	letter_text.text = "%s\n\n%s" % [level.get("letter_title", ""), level.get("letter_body", "")]
+	_apply_story_mask(String(level.get("mask", "")))
 	_refresh_level_info()
 	status_label.text = "状态：就绪"
 	tick_timer.wait_time = float(level.get("tick_rate_ms", 500.0)) / 1000.0
 	playing = false
 	tick_timer.stop()
 	win_overlay.visible = false
-	board.set_step_feedback({})
+	board.set_step_feedback({}, tick_timer.wait_time)
 	board.queue_redraw()
 	_refresh_turret_action_track()
+	_last_total_hits = _total_hits()
+	_update_level_nav_buttons()
 	_show_guide_if_needed()
 
 func _on_play_button_pressed() -> void:
@@ -62,9 +88,10 @@ func _on_reset_button_pressed() -> void:
 	tick_timer.stop()
 	status_label.text = "状态：已重置"
 	board.queue_redraw()
-	board.set_step_feedback({})
+	board.set_step_feedback({}, tick_timer.wait_time)
 	_refresh_turret_action_track()
 	_refresh_level_info()
+	_last_total_hits = 0
 
 func _on_step_button_pressed() -> void:
 	pipe_editor.close_editor()
@@ -78,14 +105,18 @@ func _on_tick_timer_timeout() -> void:
 func _step_logic() -> void:
 	logic.step_tick()
 	spectrum.kick()
-	board.set_step_feedback(logic.last_step_feedback)
+	board.set_step_feedback(logic.last_step_feedback, tick_timer.wait_time)
+	_play_step_sounds()
 	if logic.is_win():
 		playing = false
 		tick_timer.stop()
 		status_label.text = "状态：修复完成 ✓"
+		GameProgress.unlock(current_level_idx + 1)
+		sound_fx.play_win()
 		_show_win_overlay()
 	_refresh_turret_action_track()
 	_refresh_level_info()
+	_update_level_nav_buttons()
 	board.queue_redraw()
 
 func _show_win_overlay() -> void:
@@ -100,13 +131,37 @@ func _on_replay_button_pressed() -> void:
 	_load_level(current_level_idx)
 
 func _on_next_level_button_pressed() -> void:
-	if current_level_idx < levels.size() - 1:
+	if current_level_idx < levels.size() - 1 and GameProgress.can_open(current_level_idx + 1):
 		_load_level(current_level_idx + 1)
 	else:
 		_load_level(current_level_idx)
 
+
+func _on_prev_level_button_pressed() -> void:
+	if current_level_idx <= 0:
+		return
+	_load_level(current_level_idx - 1)
+
+
+func _on_next_level_nav_button_pressed() -> void:
+	var next_idx := current_level_idx + 1
+	if next_idx >= levels.size():
+		return
+	if not GameProgress.can_open(next_idx):
+		status_label.text = "状态：下一关尚未解锁"
+		return
+	_load_level(next_idx)
+
+
+func _on_home_button_pressed() -> void:
+	playing = false
+	tick_timer.stop()
+	pipe_editor.close_editor()
+	GameProgress.request_level(current_level_idx)
+	get_tree().change_scene_to_file("res://scenes/welcome_scene.tscn")
+
 func _show_guide_if_needed() -> void:
-	if current_level_idx > 5:
+	if current_level_idx > 11:
 		return
 	if shown_guides.has(current_level_idx):
 		return
@@ -114,10 +169,16 @@ func _show_guide_if_needed() -> void:
 	var guide_lines: PackedStringArray = [
 		"欢迎，维修工。\n\n目标是把洞的待填充数降到 0。炮台动作中的 1 会发射，- 会停一拍。可以按 N 单步观察。",
 		"新认知：节拍密度。\n\n1-1- 比 1--- 更频繁发射。观察左侧炮台动作轨道的扫描框。",
-		"新认知：弯管。\n\n脉冲进入弯管后会改变方向。先不用编辑，只观察路径如何拐弯。",
-		"新认知：R 指令。\n\n导线脚本里的 R 会让弯管顺时针旋转 90°。本关已经填好脚本，观察它如何赶在脉冲到达前转向。",
-		"新操作：编辑导线。\n\n点击弯管打开编辑窗，把第一行改成 R，再点应用。? 按钮可以随时查看 R / L / - 的含义。",
-		"新挑战：多炮台多故障。\n\n动作轨道每行对应一个炮台。两个洞都要填满，注意它们的发射节拍不同。"
+		"新认知：固定弯管。\n\n脉冲进入弯管后会改变方向。本关只观察路径，不需要编辑脚本。",
+		"新认知：到达前旋转。\n\n水管每个 Tick 都先执行脚本，再移动脉冲。这里 R 会在脉冲到达前把弯管转正。",
+		"新认知：连续转向。\n\n两个弯管可以组成折线路径。注意每个脉冲会一格一格前进。",
+		"新挑战：多炮台多故障。\n\n动作轨道每行对应一个炮台。两个洞都要填满，注意它们的发射节拍不同。",
+		"最终校准：LR 交替分流。\n\n炮台连续发射，弯管按 R,L,R,L 来回摆动。观察子弹如何被轮流送进两个洞。",
+		"进阶：六拍分流。\n\n炮台连续发射，但弯管脚本是 6 拍。注意 R 和 L 中间的停顿会改变命中节奏。",
+		"进阶：错拍双分流。\n\n两个炮台使用 8 拍文本错开发射，两枚弯管也用 8 拍脚本。观察每路脉冲抵达弯管时的方向。",
+		"进阶：两段延迟。\n\n第一枚弯管固定下转，第二枚弯管按 6 拍旋转。路径距离会决定它到达时是否对上角度。",
+		"进阶：十字与分流。\n\n+ 导线处理纵向通路，右侧弯管处理横向分流。两种机制会同时工作。",
+		"终检：八拍双分流。\n\n两个炮台连续发射，两枚弯管使用 8 拍 LR 脚本。四个洞都需要被节拍正确填满。"
 	]
 	guide_title.text = "维修指引"
 	guide_text.text = guide_lines[current_level_idx]
@@ -145,6 +206,7 @@ func _on_board_pipe_clicked(pipe: Dictionary, shift_pressed: bool, click_global:
 	if shift_pressed:
 		logic.rotate_pipe_at(int(pipe["col"]), int(pipe["row"]), -90)
 		status_label.text = "状态：已手动旋转导线"
+		sound_fx.play_rotate()
 		board.set_step_feedback({
 			"fired_turrets": [],
 			"rotated_pipes": [{
@@ -154,7 +216,7 @@ func _on_board_pipe_clicked(pipe: Dictionary, shift_pressed: bool, click_global:
 				"delta": -90
 			}],
 			"bullet_trails": []
-		})
+		}, tick_timer.wait_time)
 		board.queue_redraw()
 		return
 	pipe_editor.open_for(pipe, logic.unified_loop_length(), click_global)
@@ -177,6 +239,39 @@ func _refresh_turret_action_track() -> void:
 	turret_action_track.set_snapshot(logic.turret_action_snapshot())
 
 
+func _apply_story_mask(mask_name: String) -> void:
+	current_mask_name = mask_name
+	if mask_name.is_empty():
+		story_mask.texture = null
+		story_mask.visible = false
+		_layout_board_panel()
+		return
+	var path := "res://ui/%s.png" % mask_name
+	var texture := load(path) as Texture2D
+	story_mask.texture = texture
+	story_mask.visible = texture != null
+	_layout_board_panel()
+
+
+func _layout_board_panel() -> void:
+	var scale := Vector2(size.x / DESIGN_SIZE.x, size.y / DESIGN_SIZE.y)
+	var design_rect := _board_rect_for_mask(current_mask_name)
+	board_panel.position = design_rect.position * scale
+	board_panel.size = design_rect.size * scale
+
+
+func _board_rect_for_mask(mask_name: String) -> Rect2:
+	match mask_name:
+		"changpian":
+			return CHANGPIAN_BOARD_RECT
+		"mp3":
+			return MP3_BOARD_RECT
+		"cidai":
+			return CIDAI_BOARD_RECT
+		_:
+			return MP3_BOARD_RECT
+
+
 func _can_edit_pipes() -> bool:
 	return not playing and logic.is_at_initial_state()
 
@@ -189,7 +284,98 @@ func _refresh_level_info() -> void:
 		total_hits += int(t["hits"])
 	var remaining: int = maxi(0, total_required - total_hits)
 	var level_name := String(levels[current_level_idx].get("name", ""))
-	level_name_label.text = "当前关卡：%s\n洞待填充：%d / %d" % [level_name, remaining, total_required]
+	level_name_label.text = "当前关卡：%s" % [level_name]
+	to_fill_label.text = "洞待填充：%d / %d" % [remaining, total_required]
+
+
+func _update_level_nav_buttons() -> void:
+	prev_level_button.disabled = current_level_idx <= 0
+	var next_idx := current_level_idx + 1
+	next_level_nav_button.disabled = next_idx >= levels.size() or not GameProgress.can_open(next_idx)
+	_apply_icon_button_fx(prev_level_button, false, false)
+	_apply_icon_button_fx(next_level_nav_button, false, false)
+
+
+func _bind_all_icon_button_fx() -> void:
+	for button in [
+		play_button,
+		reset_button,
+		help_button,
+		step_button,
+		prev_level_button,
+		next_level_nav_button,
+		home_button
+	]:
+		_bind_icon_button_fx(button)
+		_apply_icon_button_fx(button, false, false)
+
+
+func _bind_icon_button_fx(button: Button) -> void:
+	button.mouse_entered.connect(func() -> void:
+		_apply_icon_button_fx(button, true, button.button_pressed)
+	)
+	button.mouse_exited.connect(func() -> void:
+		_apply_icon_button_fx(button, false, button.button_pressed)
+	)
+	button.button_down.connect(func() -> void:
+		_apply_icon_button_fx(button, button.is_hovered(), true)
+	)
+	button.button_up.connect(func() -> void:
+		_apply_icon_button_fx(button, button.is_hovered(), false)
+	)
+
+
+func _apply_icon_button_fx(button: Button, hovered: bool, pressed: bool) -> void:
+	var targets := _button_fx_targets(button)
+	if button.disabled:
+		for target in targets:
+			target.self_modulate = Color(0.18, 0.35, 0.18, 0.42)
+			target.scale = Vector2.ONE
+		return
+	if pressed:
+		for target in targets:
+			target.self_modulate = Color(0.45, 0.95, 0.32, 0.78)
+			target.scale = Vector2(0.90, 0.90)
+	elif hovered:
+		for target in targets:
+			target.self_modulate = Color(0.75, 1.0, 0.52, 1.0)
+			target.scale = Vector2(1.10, 1.10)
+	else:
+		for target in targets:
+			target.self_modulate = Color(0.10, 0.67, 0.04, 1.0)
+			target.scale = Vector2.ONE
+
+
+func _button_fx_targets(button: Button) -> Array[CanvasItem]:
+	var targets: Array[CanvasItem] = []
+	var icon := button.get_node_or_null("Icon") as CanvasItem
+	if icon != null:
+		targets.append(icon)
+	var label := button.get_node_or_null("Label") as CanvasItem
+	if label != null:
+		targets.append(label)
+	if targets.is_empty():
+		targets.append(button)
+	return targets
+
+
+func _play_step_sounds() -> void:
+	if not (logic.last_step_feedback["fired_turrets"] as Array).is_empty():
+		sound_fx.play_fire()
+	if not (logic.last_step_feedback["rotated_pipes"] as Array).is_empty():
+		sound_fx.play_rotate()
+	var total_hits := _total_hits()
+	if total_hits > _last_total_hits:
+		for i in range(total_hits - _last_total_hits):
+			sound_fx.play_hit()
+	_last_total_hits = total_hits
+
+
+func _total_hits() -> int:
+	var total := 0
+	for t in logic.targets:
+		total += int(t["hits"])
+	return total
 
 
 func _apply_terminal_popup_styles() -> void:

@@ -8,8 +8,12 @@
 [ext_resource type="Texture2D" uid="uid://b70jsjjmknxhh" path="res://ui/button.png" id="6_utbpp"]
 [ext_resource type="Texture2D" uid="uid://csbi4nf4pjfl8" path="res://ui/loop.png" id="7_loop"]
 [ext_resource type="FontFile" uid="uid://rdskr8mkkv7y" path="res://font/little-pixel.ttf" id="8_b5spy"]
+[ext_resource type="FontFile" uid="uid://clnkvecvleou0" path="res://font/pixel-highscore.ttf" id="9_5ay1a"]
 [ext_resource type="Script" uid="uid://2mtp6oplj842" path="res://scripts/pipe_editor_popup.gd" id="9_pipe"]
-[ext_resource type="Script" path="res://scripts/turret_action_track.gd" id="10_track"]
+[ext_resource type="Script" uid="uid://dd3pot54kk3th" path="res://scripts/turret_action_track.gd" id="10_track"]
+[ext_resource type="Texture2D" uid="uid://b5c8oo2ncdg57" path="res://ui/home.svg" id="11_ldkr4"]
+[ext_resource type="Script" uid="uid://bdbh74nr3c12r" path="res://scripts/sound_fx.gd" id="11_sound"]
+[ext_resource type="Texture2D" uid="uid://14qq75te6mco" path="res://ui/next.svg" id="12_next"]
 
 [node name="GameScene" type="Control" unique_id=1166140879]
 layout_mode = 3
@@ -31,45 +35,95 @@ texture = ExtResource("4_panel_full")
 expand_mode = 1
 stretch_mode = 6
 
+[node name="BoardPanel" type="Control" parent="." unique_id=1437924733]
+anchors_preset = 0
+offset_left = 366.0
+offset_top = 68.5
+offset_right = 803.5
+offset_bottom = 486.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="SpectrumView" type="Control" parent="BoardPanel" unique_id=103163094]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 76)
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -92.0
+offset_bottom = -16.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("3_spectrum")
+
+[node name="GameBoard" type="Control" parent="BoardPanel" unique_id=1059646644]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("2_board")
+
+[node name="StoryMask" type="TextureRect" parent="." unique_id=1437924736]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 2.0
+offset_top = 1.0
+offset_right = 2.0
+offset_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 6
+
+[node name="ToFill" type="Label" parent="." unique_id=1211888556]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 197.0
+offset_top = 566.0
+offset_right = 344.0
+offset_bottom = 592.0
+theme_override_font_sizes/font_size = 18
+autowrap_mode = 2
+
 [node name="LevelName" type="Label" parent="." unique_id=381783392]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 38.0
-offset_top = 478.0
-offset_right = 360.0
-offset_bottom = 528.0
+offset_left = 73.0
+offset_top = 535.0
+offset_right = 387.0
+offset_bottom = 585.0
 theme_override_font_sizes/font_size = 18
 text = "当前关卡："
 autowrap_mode = 2
 
-[node name="SpectrumView" type="Control" parent="." unique_id=103163094]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(280, 50)
-anchors_preset = 0
-offset_left = 60.0
-offset_top = 324.0
-offset_right = 340.0
-offset_bottom = 374.0
-script = ExtResource("3_spectrum")
-
 [node name="PlayButton" type="Button" parent="." unique_id=1814327608]
-custom_minimum_size = Vector2(0, 64)
+custom_minimum_size = Vector2(0, 40)
 layout_mode = 0
-offset_left = 38.0
-offset_top = 391.0
-offset_right = 102.0
-offset_bottom = 455.0
+offset_left = 37.0
+offset_top = 395.0
+offset_right = 77.0
+offset_bottom = 435.0
 size_flags_horizontal = 3
 icon = ExtResource("6_play")
 expand_icon = true
 
 [node name="ResetButton" type="Button" parent="." unique_id=2135409914]
-custom_minimum_size = Vector2(0, 64)
+custom_minimum_size = Vector2(0, 40)
 layout_mode = 0
-offset_left = 102.0
-offset_top = 391.0
-offset_right = 166.0
-offset_bottom = 455.0
+offset_left = 77.0
+offset_top = 395.0
+offset_right = 117.0
+offset_bottom = 435.0
 size_flags_horizontal = 3
 icon = ExtResource("7_loop")
 expand_icon = true
@@ -81,102 +135,142 @@ layout_mode = 0
 offset_left = 68.0
 offset_top = 151.0
 offset_right = 338.0
-offset_bottom = 322.375
+offset_bottom = 374.0
 autowrap_mode = 2
 
 [node name="StatusLabel" type="Label" parent="." unique_id=1915654808]
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 38.0
-offset_top = 455.0
+offset_top = 431.0
 offset_right = 348.0
-offset_bottom = 478.0
+offset_bottom = 454.0
 text = "状态：就绪"
 
 [node name="TurretActionTrack" type="Control" parent="." unique_id=1915654810]
 unique_name_in_owner = true
-layout_mode = 0
-offset_left = 38.0
-offset_top = 530.0
-offset_right = 360.0
-offset_bottom = 606.0
+anchors_preset = 0
+offset_left = 36.0
+offset_top = 455.0
+offset_right = 352.0
+offset_bottom = 521.0
 script = ExtResource("10_track")
 
 [node name="HelpButton" type="Button" parent="." unique_id=1450466355]
-custom_minimum_size = Vector2(0, 64)
+custom_minimum_size = Vector2(0, 40)
 layout_mode = 0
-offset_left = 166.0
-offset_top = 391.0
-offset_right = 230.0
-offset_bottom = 455.0
+offset_left = 117.0
+offset_top = 395.0
+offset_right = 157.0
+offset_bottom = 435.0
 size_flags_horizontal = 3
 icon = ExtResource("6_utbpp")
 expand_icon = true
 
 [node name="Label" type="Label" parent="HelpButton" unique_id=1376153663]
 layout_mode = 0
-offset_right = 64.0
-offset_bottom = 64.0
+offset_left = 9.0
+offset_top = 4.0
+offset_right = 32.0
+offset_bottom = 34.0
+theme_override_colors/font_color = Color(0.101960786, 0.6666667, 0.03529412, 1)
+theme_override_fonts/font = ExtResource("9_5ay1a")
+theme_override_font_sizes/font_size = 22
 text = "?"
 horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="StepButton" type="Button" parent="." unique_id=1450466356]
-custom_minimum_size = Vector2(0, 64)
+custom_minimum_size = Vector2(0, 40)
 layout_mode = 0
-offset_left = 230.0
-offset_top = 391.0
-offset_right = 294.0
-offset_bottom = 455.0
+offset_left = 157.0
+offset_top = 395.0
+offset_right = 197.0
+offset_bottom = 435.0
 size_flags_horizontal = 3
 icon = ExtResource("6_utbpp")
 expand_icon = true
 
 [node name="Label" type="Label" parent="StepButton" unique_id=1376153664]
 layout_mode = 0
-offset_right = 64.0
-offset_bottom = 64.0
+offset_left = 6.0
+offset_top = 3.0
+offset_right = 36.0
+offset_bottom = 33.0
+theme_override_colors/font_color = Color(0.101960786, 0.6666667, 0.03529412, 1)
+theme_override_fonts/font = ExtResource("9_5ay1a")
+theme_override_font_sizes/font_size = 22
 text = "N"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="BoardPanel" type="Control" parent="." unique_id=1437924733]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 390.0
-offset_top = 24.0
-offset_right = -24.0
-offset_bottom = -24.0
-grow_horizontal = 2
-grow_vertical = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-
-[node name="BoardFill" type="ColorRect" parent="BoardPanel" unique_id=1437924734]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-color = Color(0.07, 0.11, 0.08, 1)
-
-[node name="GameBoard" type="Control" parent="BoardPanel" unique_id=1059646644]
+[node name="PrevLevelButton" type="Button" parent="." unique_id=1450466357]
 unique_name_in_owner = true
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 12.0
-offset_top = 9.0
-offset_right = -8.0
-offset_bottom = -11.0
-grow_horizontal = 2
-grow_vertical = 2
-script = ExtResource("2_board")
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 0
+offset_left = 197.0
+offset_top = 395.0
+offset_right = 237.0
+offset_bottom = 435.0
+size_flags_horizontal = 3
+icon = ExtResource("6_utbpp")
+expand_icon = true
+
+[node name="Icon" type="TextureRect" parent="PrevLevelButton" unique_id=1376153665]
+layout_mode = 0
+offset_left = 3.0
+offset_top = 4.0
+offset_right = 35.0
+offset_bottom = 36.0
+rotation = 3.14159
+pivot_offset = Vector2(16, 16)
+texture = ExtResource("12_next")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="NextLevelNavButton" type="Button" parent="." unique_id=1450466358]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 0
+offset_left = 237.0
+offset_top = 395.0
+offset_right = 277.0
+offset_bottom = 435.0
+size_flags_horizontal = 3
+icon = ExtResource("6_utbpp")
+expand_icon = true
+
+[node name="Icon" type="TextureRect" parent="NextLevelNavButton" unique_id=1376153666]
+layout_mode = 0
+offset_left = 3.0
+offset_top = 4.0
+offset_right = 35.0
+offset_bottom = 36.0
+texture = ExtResource("12_next")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="HomeButton" type="Button" parent="." unique_id=1450466359]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 0
+offset_left = 277.0
+offset_top = 395.0
+offset_right = 317.0
+offset_bottom = 435.0
+size_flags_horizontal = 3
+icon = ExtResource("6_utbpp")
+expand_icon = true
+
+[node name="Icon" type="TextureRect" parent="HomeButton" unique_id=1554541314]
+layout_mode = 0
+offset_left = 4.0
+offset_top = 5.0
+offset_right = 34.0
+offset_bottom = 35.0
+texture = ExtResource("11_ldkr4")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="TickTimer" type="Timer" parent="." unique_id=1602440750]
 unique_name_in_owner = true
@@ -297,10 +391,16 @@ text = "知道了"
 layer = 40
 script = ExtResource("9_pipe")
 
+[node name="SoundFx" type="Node" parent="." unique_id=1437924737]
+script = ExtResource("11_sound")
+
 [connection signal="pressed" from="PlayButton" to="." method="_on_play_button_pressed"]
 [connection signal="pressed" from="ResetButton" to="." method="_on_reset_button_pressed"]
 [connection signal="pressed" from="HelpButton" to="." method="_on_help_button_pressed"]
 [connection signal="pressed" from="StepButton" to="." method="_on_step_button_pressed"]
+[connection signal="pressed" from="PrevLevelButton" to="." method="_on_prev_level_button_pressed"]
+[connection signal="pressed" from="NextLevelNavButton" to="." method="_on_next_level_nav_button_pressed"]
+[connection signal="pressed" from="HomeButton" to="." method="_on_home_button_pressed"]
 [connection signal="timeout" from="TickTimer" to="." method="_on_tick_timer_timeout"]
 [connection signal="pressed" from="WinOverlay/WinCard/WinVBox/WinButtons/ReplayButton" to="." method="_on_replay_button_pressed"]
 [connection signal="pressed" from="WinOverlay/WinCard/WinVBox/WinButtons/NextLevelButton" to="." method="_on_next_level_button_pressed"]

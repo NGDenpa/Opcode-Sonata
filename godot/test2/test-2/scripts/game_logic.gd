@@ -22,6 +22,8 @@ var last_step_feedback := {
 
 func load_level(level: Dictionary) -> void:
 	tick = 0
+	cols = int(level.get("cols", 10))
+	rows = int(level.get("rows", 10))
 	bullets.clear()
 	_clear_step_feedback()
 	turrets.clear()
@@ -278,8 +280,6 @@ func _get_pipe_exit(shape: String, rotation: int, entry_dir: int) -> int:
 		"I":
 			if local_entry == 0: local_exit = 2
 			elif local_entry == 2: local_exit = 0
-			elif local_entry == 1: local_exit = 3
-			elif local_entry == 3: local_exit = 1
 		"L":
 			if local_entry == 0: local_exit = 1
 			elif local_entry == 1: local_exit = 0

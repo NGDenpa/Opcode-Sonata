@@ -10,6 +10,10 @@ signal pipe_clicked(pipe: Dictionary, shift_pressed: bool, click_global: Vector2
 var logic: GameLogic
 var _step_feedback := {}
 var _feedback_life := 0.0
+var _pipe_anim_elapsed := 0.0
+var _pipe_anim_duration := 0.0
+var _bullet_anim_elapsed := 0.0
+var _bullet_anim_duration := 0.0
 
 func _ready() -> void:
 	custom_minimum_size = Vector2(0, 0)
@@ -18,22 +22,26 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	_feedback_life = maxf(0.0, _feedback_life - delta * 2.6)
-	if _feedback_life <= 0.0:
+	_pipe_anim_elapsed = minf(_pipe_anim_elapsed + delta, _pipe_anim_duration)
+	_bullet_anim_elapsed = minf(_bullet_anim_elapsed + delta, _bullet_anim_duration)
+	if _feedback_life <= 0.0 and not _is_pipe_animating() and not _is_bullet_animating():
 		set_process(false)
 	queue_redraw()
 
 func _on_resized() -> void:
 	queue_redraw()
 
-func set_step_feedback(feedback: Dictionary) -> void:
+func set_step_feedback(feedback: Dictionary, tick_duration: float = 0.5) -> void:
 	_step_feedback = feedback.duplicate(true)
 	_feedback_life = 1.0
+	_pipe_anim_elapsed = 0.0
+	_bullet_anim_elapsed = 0.0
+	_pipe_anim_duration = maxf(0.01, tick_duration * 0.20)
+	_bullet_anim_duration = maxf(0.01, tick_duration * 0.35)
 	set_process(true)
 	queue_redraw()
 
 func _draw() -> void:
-	# 底板由场景里 BoardFill（灰框）提供，这里只叠一层很淡的终端色，避免盖住灰底
-	draw_rect(Rect2(Vector2.ZERO, size), Color(0.03, 0.1, 0.05, 0.35), true)
 	var cell := _effective_cell_size()
 	if cell <= 1.0:
 		return
@@ -92,6 +100,8 @@ func _draw_targets(cell: float, origin: Vector2) -> void:
 		)
 
 func _draw_bullets(cell: float, origin: Vector2) -> void:
+	if _is_bullet_animating():
+		return
 	for b in logic.bullets:
 		var center := origin + Vector2((int(b["col"]) + 0.5) * cell, (int(b["row"]) + 0.5) * cell)
 		draw_circle(center, cell * 0.18, Color(0.85, 1.0, 0.24, 0.18))
@@ -102,21 +112,22 @@ func _draw_pipes(cell: float, origin: Vector2) -> void:
 		var center := origin + Vector2((int(p["col"]) + 0.5) * cell, (int(p["row"]) + 0.5) * cell)
 		var half := cell * 0.35
 		var col := Color(0.18, 0.95, 0.45)
+		var rotation := _pipe_display_rotation(p)
 		match String(p["shape"]):
 			"I":
-				_draw_rot_line(center, Vector2(0, -half), Vector2(0, half), int(p["rotation"]), col, cell)
+				_draw_rot_line(center, Vector2(0, -half), Vector2(0, half), rotation, col, cell)
 			"L":
-				_draw_rot_line(center, Vector2(0, -half), Vector2.ZERO, int(p["rotation"]), col, cell)
-				_draw_rot_line(center, Vector2.ZERO, Vector2(half, 0), int(p["rotation"]), col, cell)
+				_draw_rot_line(center, Vector2(0, -half), Vector2.ZERO, rotation, col, cell)
+				_draw_rot_line(center, Vector2.ZERO, Vector2(half, 0), rotation, col, cell)
 			"T":
-				_draw_rot_line(center, Vector2(-half, 0), Vector2(half, 0), int(p["rotation"]), col, cell)
-				_draw_rot_line(center, Vector2.ZERO, Vector2(0, half), int(p["rotation"]), col, cell)
+				_draw_rot_line(center, Vector2(-half, 0), Vector2(half, 0), rotation, col, cell)
+				_draw_rot_line(center, Vector2.ZERO, Vector2(0, half), rotation, col, cell)
 			"+":
-				_draw_rot_line(center, Vector2(0, -half), Vector2(0, half), int(p["rotation"]), col, cell)
-				_draw_rot_line(center, Vector2(-half, 0), Vector2(half, 0), int(p["rotation"]), col, cell)
+				_draw_rot_line(center, Vector2(0, -half), Vector2(0, half), rotation, col, cell)
+				_draw_rot_line(center, Vector2(-half, 0), Vector2(half, 0), rotation, col, cell)
 
-func _draw_rot_line(center: Vector2, p1: Vector2, p2: Vector2, deg: int, col: Color, cell: float) -> void:
-	var rad := deg_to_rad(float(deg))
+func _draw_rot_line(center: Vector2, p1: Vector2, p2: Vector2, deg: float, col: Color, cell: float) -> void:
+	var rad := deg_to_rad(deg)
 	draw_line(center + p1.rotated(rad), center + p2.rotated(rad), col, maxf(3.0, cell * 0.15))
 
 func _draw_turret_feedback(cell: float, origin: Vector2) -> void:
@@ -141,13 +152,16 @@ func _draw_pipe_feedback(cell: float, origin: Vector2) -> void:
 func _draw_bullet_trails(cell: float, origin: Vector2) -> void:
 	if _feedback_life <= 0.0 or not _step_feedback.has("bullet_trails"):
 		return
+	var progress := _motion_progress(_anim_ratio(_bullet_anim_elapsed, _bullet_anim_duration))
 	for trail in _step_feedback["bullet_trails"]:
 		var from_pos: Vector2i = trail["from"]
 		var to_pos: Vector2i = trail["to"]
 		var a := origin + Vector2((from_pos.x + 0.5) * cell, (from_pos.y + 0.5) * cell)
 		var b := origin + Vector2((to_pos.x + 0.5) * cell, (to_pos.y + 0.5) * cell)
-		draw_line(a, b, Color(0.9, 1.0, 0.28, 0.42 * _feedback_life), maxf(2.0, cell * 0.08))
-		draw_circle(b, cell * 0.13, Color(0.9, 1.0, 0.32, 0.24 * _feedback_life))
+		var head := a.lerp(b, progress)
+		draw_line(a, head, Color(0.9, 1.0, 0.28, 0.42 * _feedback_life), maxf(2.0, cell * 0.08))
+		draw_circle(head, cell * 0.18, Color(0.9, 1.0, 0.32, 0.20 * _feedback_life))
+		draw_circle(head, cell * 0.10, Color(0.9, 1.0, 0.55, 0.95))
 
 func _effective_cell_size() -> float:
 	var pad := 10.0
@@ -159,6 +173,39 @@ func _board_origin(cell: float) -> Vector2:
 	var board_w := cell * float(grid_cols)
 	var board_h := cell * float(grid_rows)
 	return Vector2((size.x - board_w) * 0.5, (size.y - board_h) * 0.5)
+
+
+func _pipe_display_rotation(pipe: Dictionary) -> float:
+	var current := float(pipe["rotation"])
+	if not _is_pipe_animating() or not _step_feedback.has("rotated_pipes"):
+		return current
+	for rotated in _step_feedback["rotated_pipes"]:
+		if int(rotated.get("id", -1)) == int(pipe.get("id", -2)):
+			var delta := float(rotated.get("delta", 0))
+			var start := current - delta
+			return start + delta * _motion_progress(_anim_ratio(_pipe_anim_elapsed, _pipe_anim_duration))
+	return current
+
+
+func _is_pipe_animating() -> bool:
+	return _step_feedback.has("rotated_pipes") and not _step_feedback["rotated_pipes"].is_empty() and _pipe_anim_elapsed < _pipe_anim_duration
+
+
+func _is_bullet_animating() -> bool:
+	return _step_feedback.has("bullet_trails") and not _step_feedback["bullet_trails"].is_empty() and _bullet_anim_elapsed < _bullet_anim_duration
+
+
+func _anim_ratio(elapsed: float, duration: float) -> float:
+	if duration <= 0.0:
+		return 1.0
+	return clampf(elapsed / duration, 0.0, 1.0)
+
+
+func _motion_progress(t: float) -> float:
+	if t <= 0.7:
+		return t
+	var u := (t - 0.7) / 0.3
+	return 0.7 + 0.3 * (-u * u * u + u * u + u)
 
 
 func grid_pos_from_local(local_pos: Vector2) -> Vector2i:
