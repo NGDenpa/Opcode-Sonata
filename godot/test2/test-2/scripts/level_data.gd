@@ -4,7 +4,7 @@ class_name LevelData
 static func all_levels() -> Array:
 	return [
 		{
-			"name": "教程 1 - 脉冲与洞",
+			"name": "1",
 			"bpm": 100.0,
 			"tick_rate_ms": 500.0,
 			"letter_title": "维修委托 #01：小熊不唱歌了",
@@ -19,7 +19,7 @@ static func all_levels() -> Array:
 		},
 
 		{
-			"name": "教程 2 - 磁带单弯",
+			"name": "2",
 			"bpm": 95.0,
 			"tick_rate_ms": 540.0,
 			"letter_title": "维修委托 #02：卡住的磁带",
@@ -34,7 +34,7 @@ static func all_levels() -> Array:
 			"targets": [{"col": 9, "row": 7, "required": 2}]
 		},
 		{
-			"name": "教程 3 - 到达前旋转",
+			"name": "3",
 			"bpm": 90.0,
 			"tick_rate_ms": 600.0,
 			"letter_title": "维修委托 #04：节拍播放器",
@@ -48,7 +48,7 @@ static func all_levels() -> Array:
 			"targets": [{"col": 4, "row": 8, "required": 2}]
 		},
 		{
-			"name": "教程 4 - 磁带双弯",
+			"name": "4",
 			"bpm": 90.0,
 			"tick_rate_ms": 500.0,
 			"letter_title": "维修委托 #05：被折返的磁带",
@@ -69,7 +69,7 @@ static func all_levels() -> Array:
 				]
 		},
 		{
-			"name": "教程 5 - 双声道同步",
+			"name": "5",
 			"bpm": 105.0,
 			"tick_rate_ms": 480.0,
 			"letter_title": "维修委托 #06：双声道失衡",
@@ -87,39 +87,39 @@ static func all_levels() -> Array:
 			]
 		},
 		{
-			"name": "教程 6 - LR 交替分流",
+			"name": "6",
 			"bpm": 180.0,
 			"tick_rate_ms": 500.0,
-			"letter_title": "维修委托 #07：忽亮忽灭的 MP3",
+			"letter_title": "维修委托 #6：忽亮忽灭的 MP3",
 			"letter_body": "最后这个 MP3 需要把连续脉冲分流到两个故障点。弯管会按 R,L,R,L 来回摆动，让子弹轮流进入两个洞。",
 			"mask": "mp3",
 			"turrets": [
-				{"col": 4, "row": 3, "dir": 2, "loop": "11--11--"},
-				{"col": 5, "row": 3, "dir": 2, "loop": "--11--11"},
-				{"col": 6, "row": 4, "dir": 3, "loop": "--11--11"},
-				{"col": 6, "row": 5, "dir": 3, "loop": "11--11--"},
+				{"col": 4, "row": 3, "dir": 2, "loop": "11--"},
+				{"col": 5, "row": 3, "dir": 2, "loop": "--11"},
+				
+				{"col": 6, "row": 4, "dir": 3, "loop": "--11"},
+				{"col": 6, "row": 5, "dir": 3, "loop": "11--"},
 				],
 			"pipes": [
-				{"col": 4, "row": 4, "shape": "L", "rotation": 270, "loop": "-,-,-,-,-,-,-,-"},
-				#{"col": 4, "row": 5, "shape": "L", "rotation": 180, "loop": "R,L,R,L"},
-				{"col": 4, "row": 6, "shape": "L", "rotation": 180, "loop": "-,-,-,-,-,-,-,-"},
-				{"col": 3, "row": 5, "shape": "L", "rotation": 180, "loop": "-,-,-,-,-,-,-,-"},
-				#{"col": 3, "row": 6, "shape": "L", "rotation": 180, "loop": "R,L,R,L"},
-				#{"col": 5, "row": 4, "shape": "L", "rotation": 180, "loop": "R,L,R,L"},
-				{"col": 5, "row": 5, "shape": "L", "rotation": 90, "loop": "-,-,-,-,-,-,-,-"}
+				{"col": 4, "row": 4, "shape": "L", "rotation": 270, "loop": "-,-,-,-"},
+
+				{"col": 4, "row": 6, "shape": "L", "rotation": 180, "loop": "-,-,-,-"},
+				{"col": 3, "row": 5, "shape": "L", "rotation": 180, "loop": "-,-,-,-"},
+
+				{"col": 5, "row": 5, "shape": "L", "rotation": 90, "loop": "-,-,-,-"}
 			],
 			"targets": [
 				{"col": 3, "row": 4, "required": 16},
-				{"col": 2, "row": 6, "required": 32},
+				#{"col": 2, "row": 6, "required": 32},
 				{"col": 5, "row": 6, "required": 16},
-				{"col": 3, "row": 7, "required": 32}
+				#{"col": 3, "row": 7, "required": 32}
 			]
 		},
 		{
-			"name": "进阶 7 - 六拍分流",
+			"name": "7",
 			"bpm": 114.0,
 			"tick_rate_ms": 450.0,
-			"letter_title": "维修委托 #08：分流器过载",
+			"letter_title": "维修委托 #7：分流器过载",
 			"letter_body": "这个 MP3 会连续吐出脉冲。你需要给唯一的弯管写 6 拍脚本，让连续脉冲被分成上下两路。",
 			"mask": "mp3",
 			"turrets": [{"col": 1, "row": 5, "dir": 1, "loop": "111111"}],
@@ -133,10 +133,10 @@ static func all_levels() -> Array:
 			]
 		},
 		{
-			"name": "进阶 8 - 错拍双分流",
+			"name": "8",
 			"bpm": 110.0,
 			"tick_rate_ms": 470.0,
-			"letter_title": "维修委托 #09：左右声道错拍",
+			"letter_title": "维修委托 #8：左右声道错拍",
 			"letter_body": "两个炮台分别用 8 拍文本错开供给。两枚弯管都需要你写脚本，让到达时刻和分流方向对齐。",
 			"mask": "mp3",
 			"cols": 14,
@@ -158,10 +158,10 @@ static func all_levels() -> Array:
 			]
 		},
 		{
-			"name": "进阶 9 - 两段延迟",
+			"name": "9",
 			"bpm": 108.0,
 			"tick_rate_ms": 480.0,
-			"letter_title": "维修委托 #10：延迟校准",
+			"letter_title": "维修委托 #9：延迟校准",
 			"letter_body": "脉冲先被固定弯管下转，再经过第二枚可编程弯管。你只需要设计第二段的 6 拍脚本。",
 			"mask": "mp3",
 			"turrets": [{"col": 1, "row": 3, "dir": 1, "loop": "1--1--"}],
@@ -173,10 +173,10 @@ static func all_levels() -> Array:
 			"targets": [{"col": 9, "row": 6, "required": 2}]
 		},
 		{
-			"name": "进阶 10 - 十字与分流",
+			"name": "10",
 			"bpm": 112.0,
 			"tick_rate_ms": 455.0,
-			"letter_title": "维修委托 #11：交叉声道分流",
+			"letter_title": "维修委托 #10：交叉声道分流",
 			"letter_body": "纵向炮台穿过 + 导线修复下方故障；横向连续炮台需要被右侧弯管分流。只要设计右侧弯管脚本。",
 			"mask": "mp3",
 			"turrets": [
@@ -195,28 +195,25 @@ static func all_levels() -> Array:
 			]
 		},
 		{
-			"name": "进阶 11 - 八拍终检",
-			"bpm": 120.0,
-			"tick_rate_ms": 420.0,
-			"letter_title": "维修委托 #12：双分流终检",
-			"letter_body": "终检使用 8 拍炮台文本。两组连续脉冲同时进入两枚分流器，你需要为两枚弯管都写出 8 拍脚本。",
+			"name": "11",
+			"bpm": 112.0,
+			"tick_rate_ms": 455.0,
+			"letter_title": "维修委托 #11：交叉声道分流",
+			"letter_body": "纵向炮台穿过 + 导线修复下方故障；横向连续炮台需要被右侧弯管分流。只要设计右侧弯管脚本。",
 			"mask": "mp3",
-			"cols": 14,
-			"rows": 10,
 			"turrets": [
-				{"col": 2, "row": 3, "dir": 1, "loop": "11111111"},
-				{"col": 2, "row": 6, "dir": 1, "loop": "11111111"}
+				{"col": 1, "row": 5, "dir": 1, "loop": "111111"},
+				{"col": 5, "row": 1, "dir": 2, "loop": "--1--1"}
 			],
 			"pipes": [
-				{"col": 6, "row": 3, "shape": "L", "rotation": 180, "loop": "-,-,-,-,-,-,-,-"},
-				{"col": 9, "row": 6, "shape": "L", "rotation": 180, "loop": "-,-,-,-,-,-,-,-"}
+				{"col": 5, "row": 5, "shape": "+", "rotation": 0, "loop": "-,-,-,-,-,-"},
+				{"col": 8, "row": 5, "shape": "L", "rotation": 180, "loop": "-,-,-,-,-,-"}
 			],
-			"solution_loops": ["R,L,R,L,R,L,R,L", "R,L,R,L,R,L,R,L"],
+			"solution_loops": ["-,-,-,-,-,-", "R,-,-,L,-,-"],
 			"targets": [
-				{"col": 6, "row": 1, "required": 3},
-				{"col": 6, "row": 8, "required": 3},
-				{"col": 9, "row": 1, "required": 3},
-				{"col": 9, "row": 8, "required": 3}
+				{"col": 5, "row": 8, "required": 2},
+				{"col": 8, "row": 2, "required": 2},
+				{"col": 8, "row": 8, "required": 2}
 			]
 		}
 	]
