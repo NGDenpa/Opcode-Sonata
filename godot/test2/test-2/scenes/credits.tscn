@@ -1,17 +1,24 @@
 [gd_scene format=3 uid="uid://dotpx7pvdhjdd"]
 
-[ext_resource type="Texture2D" uid="uid://cwbmmh6ujem6n" path="res://ui/bg.png" id="1_2ckv8"]
+[ext_resource type="Texture2D" uid="uid://f1duo68ml2" path="res://ui/bg.png" id="1_2ckv8"]
 [ext_resource type="Script" uid="uid://c3jdf7g4o34w6" path="res://scenes/credits.gd" id="1_2fbfq"]
 [ext_resource type="FontFile" uid="uid://clnkvecvleou0" path="res://font/pixel-highscore.ttf" id="2_0ctdu"]
+[ext_resource type="Script" uid="uid://cj2qvt5wjmwiu" path="res://scripts/parallax_2d.gd" id="2_8gwij"]
 [ext_resource type="Texture2D" uid="uid://6dp4pk2y17xx" path="res://ui/loop.svg" id="4_8gwij"]
+[ext_resource type="FontFile" uid="uid://rdskr8mkkv7y" path="res://font/little-pixel.ttf" id="5_mah5v"]
 
 [node name="Credits" type="Node2D" unique_id=1025348930]
 script = ExtResource("1_2fbfq")
 
-[node name="TextureRect" type="TextureRect" parent="." unique_id=1467933487]
-custom_minimum_size = Vector2(1152, 648)
-offset_right = 1152.0
-offset_bottom = 648.0
+[node name="Parallax2D" type="Parallax2D" parent="." unique_id=1573980084]
+ignore_camera_scroll = true
+script = ExtResource("2_8gwij")
+
+[node name="TextureRect" type="TextureRect" parent="Parallax2D" unique_id=344152782]
+offset_right = 1850.0
+offset_bottom = 1650.0
+size_flags_horizontal = 4
+size_flags_vertical = 4
 texture = ExtResource("1_2ckv8")
 expand_mode = 1
 
@@ -31,6 +38,7 @@ offset_left = 114.0
 offset_top = 162.0
 offset_right = 1043.0
 offset_bottom = 581.0
+theme_override_fonts/normal_font = ExtResource("5_mah5v")
 text = "123123123123123"
 
 [node name="TextureButton" type="TextureButton" parent="." unique_id=1617984895]

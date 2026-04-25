@@ -1,14 +1,16 @@
 [gd_scene format=3 uid="uid://ddg34dobmjl4c"]
 
 [ext_resource type="Script" uid="uid://bq7ys2iig7yky" path="res://scripts/welcome_scene.gd" id="1_welcome"]
-[ext_resource type="Texture2D" uid="uid://bu0jaltn66enh" path="res://ui/title.png" id="2_title"]
 [ext_resource type="Texture2D" uid="uid://odqtj20aag5i" path="res://ui/play_title.png" id="3_play_title"]
 [ext_resource type="Texture2D" uid="uid://fvoqpgcaxrpm" path="res://ui/play_title_pressed.png" id="4_5hhb8"]
+[ext_resource type="Texture2D" uid="uid://cp15ub1h3kauk" path="res://ui/gametitle.png" id="4_ax8j8"]
 [ext_resource type="Texture2D" uid="uid://dq3pqsw4q7a4j" path="res://ui/next1_title.png" id="4_i3k6d"]
 [ext_resource type="Texture2D" uid="uid://bv2yuuk0g66p6" path="res://ui/play_title_hover.png" id="5_45xs0"]
 [ext_resource type="Texture2D" uid="uid://bm4ci6iut15n8" path="res://ui/like.png" id="5_qhx7g"]
 [ext_resource type="Texture2D" uid="uid://cgym44j4qh5u8" path="res://ui/like_title_pressed.png" id="7_b1nxc"]
 [ext_resource type="Texture2D" uid="uid://bhbnd2pdbj5b2" path="res://ui/like_title_hover.png" id="9_2wccb"]
+[ext_resource type="Script" uid="uid://cj2qvt5wjmwiu" path="res://scripts/parallax_2d.gd" id="10_ax8j8"]
+[ext_resource type="Texture2D" uid="uid://f1duo68ml2" path="res://ui/bg.png" id="10_bg"]
 
 [node name="WelcomeScene" type="Control" unique_id=700172971]
 layout_mode = 3
@@ -19,24 +21,22 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_welcome")
 
-[node name="BannerImage" type="TextureRect" parent="." unique_id=193915639]
-custom_minimum_size = Vector2(520, 120)
-layout_mode = 0
-offset_right = 1152.0
-offset_bottom = 648.0
-texture = ExtResource("2_title")
-expand_mode = 1
-stretch_mode = 5
+[node name="Parallax2D" type="Parallax2D" parent="." unique_id=935249425]
+ignore_camera_scroll = true
+script = ExtResource("10_ax8j8")
 
-[node name="Background" type="TextureRect" parent="." unique_id=1067860597]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+[node name="TextureRect" type="TextureRect" parent="Parallax2D" unique_id=1981168104]
+offset_right = 1850.0
+offset_bottom = 1650.0
+size_flags_horizontal = 4
+size_flags_vertical = 4
+texture = ExtResource("10_bg")
 expand_mode = 1
-stretch_mode = 6
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1612329761]
+position = Vector2(587, 237)
+scale = Vector2(0.76, 0.8)
+texture = ExtResource("4_ax8j8")
 
 [node name="StartButton" type="TextureButton" parent="." unique_id=1300162634]
 custom_minimum_size = Vector2(88, 88)
