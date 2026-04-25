@@ -8,9 +8,11 @@
 [ext_resource type="Texture2D" uid="uid://bv2yuuk0g66p6" path="res://ui/play_title_hover.png" id="5_45xs0"]
 [ext_resource type="Texture2D" uid="uid://bm4ci6iut15n8" path="res://ui/like.png" id="5_qhx7g"]
 [ext_resource type="Texture2D" uid="uid://cgym44j4qh5u8" path="res://ui/like_title_pressed.png" id="7_b1nxc"]
+[ext_resource type="Texture2D" uid="uid://3xv7tbkprit5" path="res://ui/playlist.png" id="8_08ct4"]
 [ext_resource type="Texture2D" uid="uid://bhbnd2pdbj5b2" path="res://ui/like_title_hover.png" id="9_2wccb"]
-[ext_resource type="Script" uid="uid://cj2qvt5wjmwiu" path="res://scripts/parallax_2d.gd" id="10_ax8j8"]
-[ext_resource type="Texture2D" uid="uid://f1duo68ml2" path="res://ui/bg.png" id="10_bg"]
+[ext_resource type="Texture2D" uid="uid://thb7eats4f76" path="res://ui/playlist_pressed.png" id="9_5wa3u"]
+[ext_resource type="Script" uid="uid://lsntv7aqw4aw" path="res://scripts/scanline_background.gd" id="10_ax8j8"]
+[ext_resource type="Texture2D" uid="uid://eunwdeg1u1t" path="res://ui/playlist_hover.png" id="10_b071u"]
 
 [node name="WelcomeScene" type="Control" unique_id=700172971]
 layout_mode = 3
@@ -21,17 +23,14 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_welcome")
 
-[node name="Parallax2D" type="Parallax2D" parent="." unique_id=935249425]
-ignore_camera_scroll = true
+[node name="ScanlineBackground" type="Control" parent="." unique_id=935249425]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 script = ExtResource("10_ax8j8")
-
-[node name="TextureRect" type="TextureRect" parent="Parallax2D" unique_id=1981168104]
-offset_right = 1850.0
-offset_bottom = 1650.0
-size_flags_horizontal = 4
-size_flags_vertical = 4
-texture = ExtResource("10_bg")
-expand_mode = 1
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=1612329761]
 position = Vector2(587, 237)
@@ -70,11 +69,23 @@ scale = Vector2(0.6218182, 0.6490909)
 texture = ExtResource("4_i3k6d")
 flip_h = true
 
+[node name="playList" type="TextureButton" parent="." unique_id=1083103656]
+layout_mode = 0
+offset_left = 201.0
+offset_top = 374.0
+offset_right = 1305.0
+offset_bottom = 1215.0
+scale = Vector2(0.157, 0.164)
+texture_normal = ExtResource("8_08ct4")
+texture_pressed = ExtResource("9_5wa3u")
+texture_hover = ExtResource("10_b071u")
+stretch_mode = 0
+
 [node name="like" type="TextureButton" parent="." unique_id=265809326]
 layout_mode = 0
-offset_left = 794.0
+offset_left = 793.0
 offset_top = 374.99997
-offset_right = 1028.0
+offset_right = 1027.0
 offset_bottom = 593.0
 scale = Vector2(0.6218182, 0.6490909)
 texture_normal = ExtResource("5_qhx7g")

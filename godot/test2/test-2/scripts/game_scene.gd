@@ -4,6 +4,8 @@ const DESIGN_SIZE := Vector2(2048.0, 1152.0)
 const MP3_BOARD_RECT := Rect2(Vector2(732.0, 137.0), Vector2(875.0, 835.0))
 const CHANGPIAN_BOARD_RECT := Rect2(Vector2(898.0, 130.0), Vector2(845.0, 845.0))
 const CIDAI_BOARD_RECT := Rect2(Vector2(762.0, 146.0), Vector2(1108.0, 820.0))
+const TITLE_FONT := preload("res://font/pixel-highscore.ttf")
+const BODY_FONT := preload("res://font/little-pixel.ttf")
 
 @onready var board_panel: Control = $BoardPanel
 @onready var board: GameBoard = %GameBoard
@@ -24,7 +26,11 @@ const CIDAI_BOARD_RECT := Rect2(Vector2(762.0, 146.0), Vector2(1108.0, 820.0))
 @onready var next_level_nav_button: Button = %NextLevelNavButton
 @onready var home_button: Button = %HomeButton
 @onready var win_overlay: ColorRect = $WinOverlay
+@onready var win_card: PanelContainer = $WinOverlay/WinCard
+@onready var win_title: Label = $WinOverlay/WinCard/WinVBox/WinTitle
 @onready var win_hint: Label = %WinHint
+@onready var replay_button: Button = $WinOverlay/WinCard/WinVBox/WinButtons/ReplayButton
+@onready var next_level_button: Button = $WinOverlay/WinCard/WinVBox/WinButtons/NextLevelButton
 @onready var guide_overlay: ColorRect = $GuideOverlay
 @onready var guide_card: PanelContainer = $GuideOverlay/GuideCard
 @onready var guide_vbox: VBoxContainer = $GuideOverlay/GuideCard/GuideVBox
@@ -64,9 +70,10 @@ func _load_level(idx: int) -> void:
 	board.grid_rows = logic.rows
 	letter_text.text = "%s\n\n%s" % [level.get("letter_title", ""), level.get("letter_body", "")]
 	_apply_story_mask(String(level.get("mask", "")))
-	_refresh_level_info()
-	status_label.text = "状态：就绪"
+	status_label.text = "STATUS: READY"
 	tick_timer.wait_time = float(level.get("tick_rate_ms", 500.0)) / 1000.0
+	_configure_level_music(level)
+	_refresh_level_info()
 	playing = false
 	tick_timer.stop()
 	win_overlay.visible = false
@@ -75,23 +82,26 @@ func _load_level(idx: int) -> void:
 	_refresh_turret_action_track()
 	_last_total_hits = _total_hits()
 	_update_level_nav_buttons()
+	_update_duck_button_state()
 	_show_guide_if_needed()
 
 func _on_play_button_pressed() -> void:
 	playing = not playing
 	if playing:
 		pipe_editor.close_editor()
+		sound_fx.stop_phrase_loop()
 		tick_timer.start()
-		status_label.text = "状态：运行中"
+		status_label.text = "STATUS: RUNNING"
 	else:
 		tick_timer.stop()
-		status_label.text = "状态：暂停"
+		status_label.text = "STATUS: PAUSED"
 
 func _on_reset_button_pressed() -> void:
 	logic.reset()
+	_configure_level_music(levels[current_level_idx])
 	playing = false
 	tick_timer.stop()
-	status_label.text = "状态：已重置"
+	status_label.text = "STATUS: RESET"
 	board.queue_redraw()
 	board.set_step_feedback({}, tick_timer.wait_time)
 	_refresh_turret_action_track()
@@ -115,7 +125,7 @@ func _step_logic() -> void:
 	if logic.is_win():
 		playing = false
 		tick_timer.stop()
-		status_label.text = "状态：修复完成 ✓"
+		status_label.text = "STATUS: REPAIR COMPLETE"
 		GameProgress.unlock(current_level_idx + 1)
 		sound_fx.play_win()
 		_show_win_overlay()
@@ -126,11 +136,20 @@ func _step_logic() -> void:
 
 func _show_win_overlay() -> void:
 	win_overlay.visible = true
-	var tick_line := "用时：%d Tick" % logic.tick
+	sound_fx.start_phrase_loop()
+	var tick_line := "TIME: %d TICKS" % logic.tick
+	var thanks := String((levels[current_level_idx] as Dictionary).get("thank_you", "")).strip_edges()
+	var message := tick_line
+	if not thanks.is_empty():
+		message += "\n\n%s" % thanks
 	if current_level_idx < levels.size() - 1:
-		win_hint.text = "%s\n是否进入下一关？" % tick_line
+		replay_button.visible = true
+		next_level_button.text = "NEXT"
+		win_hint.text = "%s\n\nENTER NEXT LEVEL?" % message
 	else:
-		win_hint.text = "%s\n已是最后一关，是否重玩？" % tick_line
+		replay_button.visible = false
+		next_level_button.text = "CONTINUE"
+		win_hint.text = "%s\n\nFINAL REPAIR COMPLETE" % message
 
 func _on_replay_button_pressed() -> void:
 	_load_level(current_level_idx)
@@ -139,7 +158,7 @@ func _on_next_level_button_pressed() -> void:
 	if current_level_idx < levels.size() - 1 and GameProgress.can_open(current_level_idx + 1):
 		_load_level(current_level_idx + 1)
 	else:
-		_load_level(current_level_idx)
+		_show_thanks_for_playing()
 
 
 func _on_prev_level_button_pressed() -> void:
@@ -153,14 +172,32 @@ func _on_next_level_nav_button_pressed() -> void:
 	if next_idx >= levels.size():
 		return
 	if not GameProgress.can_open(next_idx):
-		status_label.text = "状态：下一关尚未解锁"
+		status_label.text = "STATUS: NEXT LEVEL LOCKED"
 		return
 	_load_level(next_idx)
 
 
 func _on_home_button_pressed() -> void:
+	_return_to_title()
+
+
+func _show_thanks_for_playing() -> void:
+	win_overlay.visible = false
+	sound_fx.stop_phrase_loop()
+	_guide_mode = "ending"
+	guide_title.text = "THANKS FOR PLAYING"
+	guide_text.text = "Thank you for repairing every loop."
+	guide_ok_button.text = "TITLE"
+	if _solution_apply_button != null:
+		_solution_apply_button.visible = false
+	guide_overlay.visible = true
+	status_label.text = "STATUS: COMPLETE"
+
+
+func _return_to_title() -> void:
 	playing = false
 	tick_timer.stop()
+	sound_fx.stop_phrase_loop()
 	pipe_editor.close_editor()
 	GameProgress.request_level(current_level_idx)
 	get_tree().change_scene_to_file("res://scenes/welcome_scene.tscn")
@@ -174,33 +211,36 @@ func _show_guide_if_needed() -> void:
 		return
 	var level_name := String(levels[current_level_idx].get("name", ""))
 	_guide_mode = "guide"
-	guide_title.text = String(level.get("guide_title", "维修指引"))
+	guide_title.text = String(level.get("guide_title", "Repair Guide"))
 	guide_text.text = guide_body
-	guide_ok_button.text = "知道了"
+	guide_ok_button.text = "OK"
 	if _solution_apply_button != null:
 		_solution_apply_button.visible = false
 	guide_overlay.visible = true
 	shown_guides[current_level_idx] = true
-	status_label.text = "状态：引导中 - %s" % level_name
+	status_label.text = "STATUS: GUIDE - %s" % level_name
 
 func _on_guide_ok_button_pressed() -> void:
 	guide_overlay.visible = false
-	if _guide_mode == "solution":
-		status_label.text = "状态：已退出解法预览"
+	if _guide_mode == "ending":
+		_return_to_title()
+		return
+	elif _guide_mode == "solution":
+		status_label.text = "STATUS: SOLUTION PREVIEW CLOSED"
 	else:
-		status_label.text = "状态：就绪"
+		status_label.text = "STATUS: READY"
 	_guide_mode = "guide"
 
 
 func _on_help_button_pressed() -> void:
 	_guide_mode = "guide"
-	guide_title.text = "指令说明"
-	guide_text.text = "指令说明\n\n炮台动作：\n1 = 发射一个脉冲\n- = 静默一拍\n\n导线脚本：\nR = 顺时针旋转 90°\nL = 逆时针旋转 90°\n- = 保持不动\n\n操作：\n点击弯管 = 打开导线脚本编辑\nShift + 点击弯管 = 手动逆时针旋转\nN = 单步执行一个 Tick"
-	guide_ok_button.text = "知道了"
+	guide_title.text = "COMMAND MANUAL"
+	guide_text.text = "Command Manual\n\nEmitter actions:\n1 = fire one pulse\n- = wait one beat\n\nPipe assembly:\nrot R = rotate 90 degrees clockwise\nrot L = rotate 90 degrees counterclockwise\nslp = hold position\n\nControls:\nClick a pipe = open pipe script editor\nShift + click a pipe = manually rotate counterclockwise\nN = step one tick"
+	guide_ok_button.text = "OK"
 	if _solution_apply_button != null:
 		_solution_apply_button.visible = false
 	guide_overlay.visible = true
-	status_label.text = "状态：查看指令说明"
+	status_label.text = "STATUS: COMMAND MANUAL"
 
 
 func _on_duck_button_pressed() -> void:
@@ -218,7 +258,7 @@ func _ensure_solution_preview_buttons() -> void:
 	guide_vbox.add_child(button_row)
 	_solution_apply_button = Button.new()
 	_solution_apply_button.name = "ApplySolutionButton"
-	_solution_apply_button.text = "确定"
+	_solution_apply_button.text = "CONFIRM"
 	_solution_apply_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_solution_apply_button.pressed.connect(_on_apply_solution_button_pressed)
 	button_row.add_child(_solution_apply_button)
@@ -229,50 +269,48 @@ func _ensure_solution_preview_buttons() -> void:
 
 func _show_solution_preview() -> void:
 	var entries: Array[Dictionary] = _solution_loop_entries()
+	if entries.is_empty():
+		_update_duck_button_state()
+		return
 	_guide_mode = "solution"
-	guide_title.text = "关卡解法"
-	guide_ok_button.text = "退出解法预览"
+	guide_title.text = "LEVEL SOLUTION"
+	guide_ok_button.text = "EXIT PREVIEW"
 	if _solution_apply_button != null:
 		_solution_apply_button.visible = true
-		_solution_apply_button.disabled = entries.is_empty()
-	if entries.is_empty():
-		guide_text.text = "当前关卡没有可应用的解法。\n\n全为 - 的空脚本会被忽略。"
-	else:
-		var lines: PackedStringArray = ["将应用以下非空导线脚本："]
-		for entry in entries:
-			lines.append(
-				"P%d (%s @ %d,%d): %s" % [
-					int(entry["index"]) + 1,
-					String(entry["shape"]),
-					int(entry["col"]),
-					int(entry["row"]),
-					String(entry["loop"])
-				]
-			)
-		lines.append("\n点击“确定”会把这些脚本写入当前关卡。")
-		guide_text.text = "\n".join(lines)
+		_solution_apply_button.disabled = false
+	var lines: PackedStringArray = ["The following non-empty pipe scripts will be applied:"]
+	for entry in entries:
+		lines.append(
+			"P%d: %s" % [
+				int(entry["index"]) + 1,
+				String(entry["loop"])
+			]
+		)
+	lines.append("\nClick CONFIRM to write these scripts into the current level.")
+	guide_text.text = "\n".join(lines)
 	guide_overlay.visible = true
-	status_label.text = "状态：解法预览"
+	status_label.text = "STATUS: SOLUTION PREVIEW"
 
 
 func _on_apply_solution_button_pressed() -> void:
 	if not _can_edit_pipes():
-		status_label.text = "状态：运行后不可应用解法，请重置后再试"
+		status_label.text = "STATUS: RESET BEFORE APPLYING SOLUTION"
 		return
 	var entries: Array[Dictionary] = _solution_loop_entries()
 	if entries.is_empty():
-		status_label.text = "状态：当前关卡没有可应用的解法"
+		status_label.text = "STATUS: NO SOLUTION AVAILABLE"
 		return
 	for entry in entries:
 		var err := logic.set_pipe_loop_by_id(int(entry["index"]), String(entry["loop"]))
 		if err != "":
-			status_label.text = "状态：%s" % err
+			status_label.text = "STATUS: %s" % err
 			return
 	guide_overlay.visible = false
 	_guide_mode = "guide"
 	board.queue_redraw()
 	_refresh_turret_action_track()
-	status_label.text = "状态：已应用关卡解法"
+	_update_duck_button_state()
+	status_label.text = "STATUS: SOLUTION APPLIED"
 
 
 func _solution_loop_entries() -> Array[Dictionary]:
@@ -307,14 +345,19 @@ func _is_empty_solution_loop(loop_text: String) -> bool:
 	return true
 
 
+func _update_duck_button_state() -> void:
+	duck_button.disabled = _solution_loop_entries().is_empty()
+	_apply_icon_button_fx(duck_button, false, false)
+
+
 func _on_board_pipe_clicked(pipe: Dictionary, shift_pressed: bool, click_global: Vector2) -> void:
 	if not _can_edit_pipes():
 		pipe_editor.close_editor()
-		status_label.text = "状态：运行后不可编辑，请重置后再调整导线"
+		status_label.text = "STATUS: RESET BEFORE EDITING PIPES"
 		return
 	if shift_pressed:
 		logic.rotate_pipe_at(int(pipe["col"]), int(pipe["row"]), -90)
-		status_label.text = "状态：已手动旋转导线"
+		status_label.text = "STATUS: PIPE ROTATED MANUALLY"
 		sound_fx.play_rotate()
 		board.set_step_feedback({
 			"fired_turrets": [],
@@ -333,13 +376,13 @@ func _on_board_pipe_clicked(pipe: Dictionary, shift_pressed: bool, click_global:
 
 func _on_pipe_script_applied(pipe_id: int, script_csv: String) -> void:
 	if not _can_edit_pipes():
-		status_label.text = "状态：运行后不可编辑，请重置后再调整导线"
+		status_label.text = "STATUS: RESET BEFORE EDITING PIPES"
 		return
 	var err := logic.set_pipe_loop_by_id(pipe_id, script_csv)
 	if err != "":
-		status_label.text = "状态：%s" % err
+		status_label.text = "STATUS: %s" % err
 	else:
-		status_label.text = "状态：导线脚本已更新"
+		status_label.text = "STATUS: PIPE SCRIPT UPDATED"
 	board.queue_redraw()
 	_refresh_turret_action_track()
 
@@ -450,8 +493,8 @@ func _refresh_level_info() -> void:
 		total_hits += int(t["hits"])
 	var remaining: int = maxi(0, total_required - total_hits)
 	var level_name := String(levels[current_level_idx].get("name", ""))
-	level_name_label.text = "当前关卡：%s" % [level_name]
-	to_fill_label.text = "洞待填充：%d / %d" % [remaining, total_required]
+	level_name_label.text = "LEVEL: %s" % [level_name]
+	to_fill_label.text = "TARGET FILL: %d / %d" % [remaining, total_required]
 
 
 func _level_grid_info_text() -> String:
@@ -468,7 +511,7 @@ func _level_grid_info_text() -> String:
 	var window_end := board_rect.position + board_rect.size
 	var spectrum_rect: Rect2 = _spectrum_rect_for_current_level(board_rect)
 	var spectrum_end := spectrum_rect.position + spectrum_rect.size
-	return "蒙版：%s\n窗口：%s - %s (%s)\n网格：%d x %d，单格 %.0fpx\n网格位置：%s - %s (%s)\n频谱：%s - %s (%s)" % [
+	return "MASK: %s\nWINDOW: %s - %s (%s)\nGRID: %d x %d, CELL %.0fpx\nGRID POS: %s - %s (%s)\nSPECTRUM: %s - %s (%s)" % [
 		mask_name,
 		_format_vec2(board_rect.position),
 		_format_vec2(window_end),
@@ -573,8 +616,17 @@ func _play_step_sounds() -> void:
 	var total_hits := _total_hits()
 	if total_hits > _last_total_hits:
 		for i in range(total_hits - _last_total_hits):
-			sound_fx.play_hit()
+			if not sound_fx.play_phrase_hit_note():
+				sound_fx.play_hit()
 	_last_total_hits = total_hits
+
+
+func _configure_level_music(level: Dictionary) -> void:
+	var phrase := String(level.get("music_phrase", ""))
+	if phrase.strip_edges().is_empty():
+		sound_fx.clear_phrase()
+	else:
+		sound_fx.configure_phrase(phrase, tick_timer.wait_time)
 
 
 func _total_hits() -> int:
@@ -587,14 +639,28 @@ func _total_hits() -> int:
 func _apply_terminal_popup_styles() -> void:
 	guide_overlay.color = Color(0.0, 0.035, 0.012, 0.58)
 	guide_card.add_theme_stylebox_override("panel", _terminal_panel_style())
+	win_overlay.color = Color(0.0, 0.035, 0.012, 0.62)
+	win_card.add_theme_stylebox_override("panel", _terminal_panel_style())
+	win_title.add_theme_color_override("font_color", Color(0.66, 1.0, 0.64, 1.0))
+	win_title.add_theme_font_override("font", TITLE_FONT)
+	win_hint.add_theme_color_override("font_color", Color(0.72, 1.0, 0.68, 0.96))
+	_style_terminal_button(replay_button)
+	_style_terminal_button(next_level_button)
+	level_name_label.add_theme_font_override("font", BODY_FONT)
+	to_fill_label.add_theme_font_override("font", BODY_FONT)
+	status_label.add_theme_font_override("font", BODY_FONT)
+	win_hint.add_theme_font_override("font", BODY_FONT)
 	guide_title.add_theme_color_override("font_color", Color(0.66, 1.0, 0.64, 1.0))
+	guide_title.add_theme_font_override("font", TITLE_FONT)
 	guide_title.add_theme_font_size_override("font_size", 22)
 	guide_text.add_theme_stylebox_override("normal", _terminal_text_style())
 	guide_text.add_theme_color_override("default_color", Color(0.72, 1.0, 0.68, 0.96))
+	guide_text.add_theme_font_override("normal_font", BODY_FONT)
 	guide_text.add_theme_font_size_override("normal_font_size", 15)
 	guide_ok_button.add_theme_stylebox_override("normal", _terminal_button_style(Color(0.02, 0.13, 0.05, 0.94), Color(0.25, 0.9, 0.36, 0.66)))
 	guide_ok_button.add_theme_stylebox_override("hover", _terminal_button_style(Color(0.04, 0.22, 0.08, 0.96), Color(0.58, 1.0, 0.56, 0.86)))
 	guide_ok_button.add_theme_stylebox_override("pressed", _terminal_button_style(Color(0.42, 1.0, 0.44, 0.92), Color(0.82, 1.0, 0.76, 1.0)))
+	guide_ok_button.add_theme_font_override("font", BODY_FONT)
 	guide_ok_button.add_theme_color_override("font_color", Color(0.72, 1.0, 0.68, 1.0))
 	guide_ok_button.add_theme_color_override("font_hover_color", Color(0.92, 1.0, 0.78, 1.0))
 	guide_ok_button.add_theme_color_override("font_pressed_color", Color(0.02, 0.12, 0.04, 1.0))
@@ -603,13 +669,27 @@ func _apply_terminal_popup_styles() -> void:
 		_solution_apply_button.add_theme_stylebox_override("hover", _terminal_button_style(Color(0.04, 0.22, 0.08, 0.96), Color(0.58, 1.0, 0.56, 0.86)))
 		_solution_apply_button.add_theme_stylebox_override("pressed", _terminal_button_style(Color(0.42, 1.0, 0.44, 0.92), Color(0.82, 1.0, 0.76, 1.0)))
 		_solution_apply_button.add_theme_stylebox_override("disabled", _terminal_button_style(Color(0.02, 0.08, 0.04, 0.55), Color(0.16, 0.42, 0.18, 0.45)))
+		_solution_apply_button.add_theme_font_override("font", BODY_FONT)
 		_solution_apply_button.add_theme_color_override("font_color", Color(0.72, 1.0, 0.68, 1.0))
 		_solution_apply_button.add_theme_color_override("font_hover_color", Color(0.92, 1.0, 0.78, 1.0))
 		_solution_apply_button.add_theme_color_override("font_pressed_color", Color(0.02, 0.12, 0.04, 1.0))
 		_solution_apply_button.add_theme_color_override("font_disabled_color", Color(0.38, 0.58, 0.38, 0.72))
 	letter_text.add_theme_stylebox_override("normal", _terminal_text_style())
 	letter_text.add_theme_color_override("default_color", Color(0.72, 1.0, 0.68, 0.94))
+	letter_text.add_theme_font_override("normal_font", BODY_FONT)
 	letter_text.add_theme_font_size_override("normal_font_size", 8)
+
+
+func _style_terminal_button(button: Button) -> void:
+	button.add_theme_stylebox_override("normal", _terminal_button_style(Color(0.02, 0.13, 0.05, 0.94), Color(0.25, 0.9, 0.36, 0.66)))
+	button.add_theme_stylebox_override("hover", _terminal_button_style(Color(0.04, 0.22, 0.08, 0.96), Color(0.58, 1.0, 0.56, 0.86)))
+	button.add_theme_stylebox_override("pressed", _terminal_button_style(Color(0.42, 1.0, 0.44, 0.92), Color(0.82, 1.0, 0.76, 1.0)))
+	button.add_theme_stylebox_override("disabled", _terminal_button_style(Color(0.02, 0.08, 0.04, 0.55), Color(0.16, 0.42, 0.18, 0.45)))
+	button.add_theme_font_override("font", BODY_FONT)
+	button.add_theme_color_override("font_color", Color(0.72, 1.0, 0.68, 1.0))
+	button.add_theme_color_override("font_hover_color", Color(0.92, 1.0, 0.78, 1.0))
+	button.add_theme_color_override("font_pressed_color", Color(0.02, 0.12, 0.04, 1.0))
+	button.add_theme_color_override("font_disabled_color", Color(0.38, 0.58, 0.38, 0.72))
 
 
 func _terminal_panel_style() -> StyleBoxFlat:

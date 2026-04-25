@@ -29,21 +29,13 @@ func _draw() -> void:
 	draw_rect(bg, Color(0.015, 0.055, 0.025, 0.86), true)
 	draw_rect(bg, Color(0.20, 0.95, 0.38, 0.46), false, 1.0)
 	_draw_scanlines(bg)
-	draw_string(
-		ThemeDB.fallback_font,
-		Vector2(10, 18),
-		"炮台动作",
-		HORIZONTAL_ALIGNMENT_LEFT,
-		-1,
-		14,
-		Color(0.52, 1.0, 0.58, 0.95)
-	)
 	if _snapshot.is_empty():
-		draw_string(ThemeDB.fallback_font, Vector2(10, 42), "NO SIGNAL", HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color(0.28, 0.85, 0.38, 0.72))
+		draw_string(ThemeDB.fallback_font, Vector2(10, size.y * 0.5 + 5.0), "NO SIGNAL", HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color(0.28, 0.85, 0.38, 0.72))
 		return
-	var available_h := maxf(12.0, size.y - 38.0)
+	var available_h := maxf(12.0, size.y - 10.0)
 	var row_h := minf(30.0, available_h / float(maxi(_snapshot.size(), 1)))
-	var y := 34.0
+	var content_h := row_h * float(_snapshot.size())
+	var y := maxf(5.0, (size.y - content_h) * 0.5)
 	for item in _snapshot:
 		if y + row_h > size.y - 2.0:
 			break

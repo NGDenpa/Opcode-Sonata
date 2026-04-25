@@ -216,7 +216,7 @@ func set_pipe_loop_by_id(pipe_id: int, csv: String) -> String:
 		if t.is_empty():
 			t = "-"
 		if t != "R" and t != "L" and t != "-":
-			return "无效：只允许 R / L / -"
+			return "Invalid input: use only R / L / -"
 		tokens.append(t)
 	var need := unified_loop_length()
 	while tokens.size() < need:
@@ -234,7 +234,7 @@ func set_pipe_loop_by_id(pipe_id: int, csv: String) -> String:
 			p["loop"] = _parse_pipe(joined)
 			p["idx"] = 0
 			return ""
-	return "未找到导线"
+	return "Pipe not found"
 
 
 func rotate_pipe_at(col: int, row: int, delta_deg: int) -> void:

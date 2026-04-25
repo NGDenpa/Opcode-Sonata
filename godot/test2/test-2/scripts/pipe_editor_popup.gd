@@ -1,6 +1,8 @@
 extends CanvasLayer
 class_name PipeEditorLayer
 
+const BODY_FONT := preload("res://font/little-pixel.ttf")
+
 signal pipe_script_applied(pipe_id: int, script_csv: String)
 
 var _dim: ColorRect
@@ -47,23 +49,18 @@ func open_for(pipe: Dictionary, row_count: int, click_global: Vector2) -> void:
 		var le := LineEdit.new()
 		le.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		le.custom_minimum_size = Vector2(0, 28)
-		le.max_length = 1
-		le.placeholder_text = "-"
+		le.max_length = 8
+		le.placeholder_text = "slp"
 		_style_line_edit(le)
 		var ch := ""
 		if i < parts.size():
 			ch = parts[i].strip_edges().to_upper()
-		if ch == "R" or ch == "L" or ch == "-":
-			le.text = ch
-		elif ch.is_empty():
-			le.text = "-"
-		else:
-			le.text = "-"
+		le.text = _internal_token_to_asm(ch)
 		row.add_child(lab)
 		row.add_child(le)
 		_lines_box.add_child(row)
-	_title.text = "导线脚本（id %d）" % _pipe_id
-	_hint.text = "每格输入 R / L / -，应用后写入导线循环"
+	_title.text = "PIPE SCRIPT (ID %d)" % _pipe_id
+	_hint.text = "Assembly input: rot R / rot L / slp. Apply compiles it into the pipe loop."
 	_panel.position = click_global + Vector2(12, 12)
 	visible = true
 	call_deferred("_clamp_panel")
@@ -105,7 +102,7 @@ func _build_ui() -> void:
 	_style_label(drag_lbl, 14, Color(0.5, 1.0, 0.56, 0.88))
 	_title = Label.new()
 	_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_title.text = "导线脚本"
+	_title.text = "PIPE SCRIPT"
 	_style_label(_title, 16, Color(0.66, 1.0, 0.64, 1.0))
 	var close_btn := Button.new()
 	close_btn.text = "X"
@@ -132,7 +129,7 @@ func _build_ui() -> void:
 	outer.add_child(scroll)
 
 	var apply_btn := Button.new()
-	apply_btn.text = "APPLY / 应用"
+	apply_btn.text = "APPLY"
 	_style_button(apply_btn)
 	apply_btn.pressed.connect(_on_apply_pressed)
 	outer.add_child(apply_btn)
@@ -158,10 +155,7 @@ func _on_apply_pressed() -> void:
 		if row is HBoxContainer:
 			for c in (row as HBoxContainer).get_children():
 				if c is LineEdit:
-					var t := (c as LineEdit).text.strip_edges().to_upper()
-					if t.is_empty():
-						t = "-"
-					tokens.append(t)
+					tokens.append(_asm_to_internal_token((c as LineEdit).text))
 					break
 	var csv := ""
 	for i in range(tokens.size()):
@@ -170,6 +164,27 @@ func _on_apply_pressed() -> void:
 		csv += tokens[i]
 	pipe_script_applied.emit(_pipe_id, csv)
 	close_editor()
+
+
+func _internal_token_to_asm(token: String) -> String:
+	match token.strip_edges().to_upper():
+		"R":
+			return "rot R"
+		"L":
+			return "rot L"
+		_:
+			return "slp"
+
+
+func _asm_to_internal_token(text: String) -> String:
+	var clean := text.strip_edges().to_upper()
+	if clean.is_empty() or clean == "SLP" or clean == "SLEEP" or clean == "-":
+		return "-"
+	if clean == "R" or clean == "ROT R" or clean == "ROTR":
+		return "R"
+	if clean == "L" or clean == "ROT L" or clean == "ROTL":
+		return "L"
+	return "-"
 
 
 func _clamp_panel() -> void:
@@ -229,6 +244,7 @@ func _terminal_field_style(bg: Color, border: Color) -> StyleBoxFlat:
 
 func _style_label(label: Label, size_px: int, color: Color) -> void:
 	label.add_theme_color_override("font_color", color)
+	label.add_theme_font_override("font", BODY_FONT)
 	label.add_theme_font_size_override("font_size", size_px)
 
 
@@ -237,6 +253,7 @@ func _style_line_edit(line_edit: LineEdit) -> void:
 	line_edit.add_theme_color_override("font_color", Color(0.72, 1.0, 0.68, 1.0))
 	line_edit.add_theme_color_override("caret_color", Color(0.85, 1.0, 0.75, 1.0))
 	line_edit.add_theme_color_override("font_placeholder_color", Color(0.32, 0.7, 0.38, 0.7))
+	line_edit.add_theme_font_override("font", BODY_FONT)
 	line_edit.add_theme_font_size_override("font_size", 14)
 	line_edit.add_theme_stylebox_override("normal", _terminal_field_style(Color(0.01, 0.11, 0.04, 0.9), Color(0.22, 0.9, 0.35, 0.62)))
 	line_edit.add_theme_stylebox_override("focus", _terminal_field_style(Color(0.02, 0.16, 0.06, 0.94), Color(0.62, 1.0, 0.64, 0.92)))
@@ -246,6 +263,7 @@ func _style_button(button: Button) -> void:
 	button.add_theme_color_override("font_color", Color(0.72, 1.0, 0.68, 1.0))
 	button.add_theme_color_override("font_hover_color", Color(0.92, 1.0, 0.78, 1.0))
 	button.add_theme_color_override("font_pressed_color", Color(0.02, 0.12, 0.04, 1.0))
+	button.add_theme_font_override("font", BODY_FONT)
 	button.add_theme_font_size_override("font_size", 13)
 	button.add_theme_stylebox_override("normal", _terminal_field_style(Color(0.02, 0.13, 0.05, 0.92), Color(0.25, 0.9, 0.36, 0.66)))
 	button.add_theme_stylebox_override("hover", _terminal_field_style(Color(0.04, 0.22, 0.08, 0.96), Color(0.58, 1.0, 0.56, 0.86)))
