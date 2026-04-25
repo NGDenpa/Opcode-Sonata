@@ -118,6 +118,7 @@ offset_right = 77.0
 offset_bottom = 435.0
 size_flags_horizontal = 3
 icon = ExtResource("6_play")
+flat = true
 expand_icon = true
 
 [node name="ResetButton" type="Button" parent="." unique_id=2135409914]
@@ -129,6 +130,7 @@ offset_right = 117.0
 offset_bottom = 435.0
 size_flags_horizontal = 3
 icon = ExtResource("7_loop")
+flat = true
 expand_icon = true
 
 [node name="LetterText" type="RichTextLabel" parent="." unique_id=389092732]
@@ -139,6 +141,12 @@ offset_left = 68.0
 offset_top = 151.0
 offset_right = 338.0
 offset_bottom = 374.0
+theme_override_fonts/normal_font = ExtResource("8_b5spy")
+theme_override_font_sizes/normal_font_size = 9
+theme_override_font_sizes/bold_font_size = 9
+theme_override_font_sizes/bold_italics_font_size = 9
+theme_override_font_sizes/italics_font_size = 9
+theme_override_font_sizes/mono_font_size = 9
 autowrap_mode = 2
 
 [node name="StatusLabel" type="Label" parent="." unique_id=1915654808]
@@ -168,6 +176,7 @@ offset_right = 157.0
 offset_bottom = 435.0
 size_flags_horizontal = 3
 icon = ExtResource("6_utbpp")
+flat = true
 expand_icon = true
 
 [node name="Label" type="Label" parent="HelpButton" unique_id=1376153663]
@@ -192,6 +201,7 @@ offset_right = 197.0
 offset_bottom = 435.0
 size_flags_horizontal = 3
 icon = ExtResource("6_utbpp")
+flat = true
 expand_icon = true
 
 [node name="Label" type="Label" parent="StepButton" unique_id=1376153664]
@@ -217,6 +227,7 @@ offset_right = 237.0
 offset_bottom = 435.0
 size_flags_horizontal = 3
 icon = ExtResource("6_utbpp")
+flat = true
 expand_icon = true
 
 [node name="Icon" type="TextureRect" parent="PrevLevelButton" unique_id=1376153665]
@@ -241,6 +252,7 @@ offset_right = 277.0
 offset_bottom = 435.0
 size_flags_horizontal = 3
 icon = ExtResource("6_utbpp")
+flat = true
 expand_icon = true
 
 [node name="Icon" type="TextureRect" parent="NextLevelNavButton" unique_id=1376153666]
@@ -263,6 +275,7 @@ offset_right = 317.0
 offset_bottom = 435.0
 size_flags_horizontal = 3
 icon = ExtResource("6_utbpp")
+flat = true
 expand_icon = true
 
 [node name="Icon" type="TextureRect" parent="HomeButton" unique_id=1554541314]

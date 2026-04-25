@@ -486,7 +486,7 @@ func _apply_terminal_popup_styles() -> void:
 	guide_ok_button.add_theme_color_override("font_pressed_color", Color(0.02, 0.12, 0.04, 1.0))
 	letter_text.add_theme_stylebox_override("normal", _terminal_text_style())
 	letter_text.add_theme_color_override("default_color", Color(0.72, 1.0, 0.68, 0.94))
-	letter_text.add_theme_font_size_override("normal_font_size", 14)
+	letter_text.add_theme_font_size_override("normal_font_size", 8)
 
 
 func _terminal_panel_style() -> StyleBoxFlat:

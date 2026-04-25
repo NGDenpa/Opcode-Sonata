@@ -9,11 +9,11 @@ static func all_levels() -> Array:
 			"tick_rate_ms": 500.0,
 			"letter_title": "维修委托 #01：小熊不唱歌了",
 			"letter_body": "维修工你好：\n\n先确认最基础的脉冲。炮台动作里的 1 会发射，- 会停一拍。让脉冲填满右侧的洞。\n\n—— 小雨（7岁）",
-			"mask": "mp3",
+			"mask": "tutorial",
 			"cols": 10,
 			"rows": 10,
-			"board_rect": {"x": 732.0, "y": 137.0, "width": 875.0, "height": 835.0},
-			"spectrum_rect": {"x": 732.0, "y": 880.0, "width": 875.0, "height": 76.0},
+			"board_rect": {"x": 873.0, "y": 137.0, "width": 875.0, "height": 835.0},
+			"spectrum_rect": {"x": 873.0, "y": 840.0, "width": 875.0, "height": 76.0},
 			"turrets": [{"col": 1, "row": 5, "dir": 1, "loop": "1-1-"}],
 			"pipes": [
 				{"col": 4, "row": 5, "shape": "I", "rotation": 90, "loop": "-,-,-,-"},
@@ -28,9 +28,11 @@ static func all_levels() -> Array:
 			"tick_rate_ms": 540.0,
 			"letter_title": "维修委托 #02：卡住的磁带",
 			"letter_body": "这盘磁带里录着妈妈年轻时唱的歌，但现在只有杂音。先从一枚固定弯管开始：脉冲会沿磁带仓向下转向。",
-			"mask": "mp3",
+			"mask": "tutorial",
 			"cols": 14,
 			"rows": 10,
+			"board_rect": {"x": 873.0, "y": 137.0, "width": 875.0, "height": 835.0},
+			"spectrum_rect": {"x": 873.0, "y": 840.0, "width": 875.0, "height": 76.0},
 			"turrets": [{"col": 2, "row": 2, "dir": 1, "loop": "1---"}],
 			"pipes": [
 				{"col": 9, "row": 2, "shape": "L", "rotation": 180, "loop": "-,-,-,-"}
@@ -43,7 +45,9 @@ static func all_levels() -> Array:
 			"tick_rate_ms": 600.0,
 			"letter_title": "维修委托 #04：节拍播放器",
 			"letter_body": "直线管道和L型管道角度不对，点击他们更改脚本吧.基本的操作手册可以点击问号查看.值得注意的是，你的所有脚本会循环进行！如果你想保证每一轮脚本都稳步运行，你需要保证它们在脚本结束时，回到了它们初始的位置",
-			"mask": "mp3",
+			"mask": "tutorial",
+			"board_rect": {"x": 873.0, "y": 137.0, "width": 875.0, "height": 835.0},
+			"spectrum_rect": {"x": 873.0, "y": 840.0, "width": 875.0, "height": 76.0},
 			"turrets": [{"col": 1, "row": 5, "dir": 1, "loop": "1---"}],
 			"pipes": [
 				{"col": 3, "row": 5, "shape": "I", "rotation": 0, "loop": "-,-,-,-"},
@@ -57,9 +61,11 @@ static func all_levels() -> Array:
 			"tick_rate_ms": 500.0,
 			"letter_title": "维修委托 #05：被折返的磁带",
 			"letter_body": "这次脉冲需要先向下，再横向穿过磁带仓。两个固定弯管会组成一条折线路径。",
-			"mask": "mp3",
+			"mask": "tutorial",
 			"cols": 14,
 			"rows": 10,
+			"board_rect": {"x": 873.0, "y": 137.0, "width": 875.0, "height": 835.0},
+			"spectrum_rect": {"x": 873.0, "y": 840.0, "width": 875.0, "height": 76.0},
 			"turrets": [
 				{"col": 3, "row": 5, "dir": 1, "loop": "-1-1-1-1"},
 				{"col": 5, "row": 3, "dir": 2, "loop": "1-1-1-1-"},
@@ -78,10 +84,11 @@ static func all_levels() -> Array:
 			"tick_rate_ms": 480.0,
 			"letter_title": "维修委托 #06：双声道失衡",
 			"letter_body": "唱片机有两个声道失衡。每一行炮台动作对应一个炮台，两个故障点都要被填满。",
-			"mask": "radio",
+			"mask": "tutorial",
 			"cols": 14,
 			"rows": 10,
-			"board_rect": {"x": 820.0, "y": 137.0, "width": 1000.0, "height": 1000.0},
+			"board_rect": {"x": 873.0, "y": 137.0, "width": 875.0, "height": 835.0},
+			"spectrum_rect": {"x": 873.0, "y": 840.0, "width": 875.0, "height": 76.0},
 			"turrets": [
 				{"col": 2, "row": 5, "dir": 1, "loop": "11111111"},
 			],
@@ -98,11 +105,12 @@ static func all_levels() -> Array:
 			"bpm": 180.0,
 			"tick_rate_ms": 500.0,
 			"letter_title": "维修委托 #6：忽亮忽灭的 MP3",
-			"letter_body": "最后这个 MP3 需要把连续脉冲分流到两个故障点。弯管会按 R,L,R,L 来回摆动，让子弹轮流进入两个洞。",
+			"letter_body": "Hi, I have a stereo system that was given to me as a gift, and I’d like to check if it can be repaired. I used to play some music on it from time to time, but it hasn’t been used much recently. Now it doesn’t power on at all, so I think there might be an issue with it. I’m not sure if it’s worth fixing, but I’d like to ask first. Thanks.",
 			"mask": "yinxiang",
 			"cols": 10,
 			"rows": 10,
 			"board_rect": {"x": 900.0, "y": 130.0, "width": 875.0, "height": 835.0},
+			"spectrum_rect": {"x": 873.0, "y": 490.0, "width": 875.0, "height": 76.0},
 			"turrets": [
 				{"col": 4, "row": 3, "dir": 2, "loop": "11--"},
 				{"col": 5, "row": 3, "dir": 2, "loop": "--11"},
@@ -130,12 +138,12 @@ static func all_levels() -> Array:
 			"bpm": 114.0,
 			"tick_rate_ms": 450.0,
 			"letter_title": "维修委托 #7：分流器过载",
-			"letter_body": "这个 MP3 会连续吐出脉冲。你需要给唯一的弯管写 6 拍脚本，让连续脉冲被分成上下两路。",
+			"letter_body": "Hi, I’d like to repair a pair of speakers that have been in my family for years. My parents bought them a long time ago, and we used to play some classical-style music on weekends. Now one speaker has no sound at all, while the other still works a bit. I’d like to see if they can be fixed and used together again as a proper pair. Thank you.",
 			"mask": "laba",
 			"cols": 13,
 			"rows": 11,
 			"board_rect": {"x": 900.0, "y": 100.0, "width": 1000.0, "height": 900.0},
-			"spectrum_rect": {"x": 732.0, "y": 477.0, "width": 875.0, "height": 76.0},
+			"spectrum_rect": {"x": 890.0, "y": 477.0, "width": 989.0, "height": 76.0},
 			"turrets": [{"col": 1, "row": 5, "dir": 1, "loop": "11111111"}],
 			"pipes": [
 				{"col": 3, "row": 3, "shape": "L", "rotation": 90, "loop": "-,-,-,-,-,-,-,-"},
@@ -163,10 +171,11 @@ static func all_levels() -> Array:
 			"bpm": 110.0,
 			"tick_rate_ms": 470.0,
 			"letter_title": "维修委托 #8：左右声道错拍",
-			"letter_body": "两个炮台分别用 8 拍文本错开供给。两枚弯管都需要你写脚本，让到达时刻和分流方向对齐。",
+			"letter_body": "Hello, I have a cassette tape I’d like to repair. A friend and I recorded it years ago. We lost touch over time, and I recently found the tape again. When I tried to play it, it got stuck and the sound was distorted. I’m wondering if it can be fixed so I can listen to it properly again. Thanks in advance.",
 			"mask": "cidai",
 			"cols": 14,
 			"rows": 10,
+			"spectrum_rect": {"x": 893.0, "y": 490.0, "width": 875.0, "height": 76.0},
 			"turrets": [
 				{"col": 2, "row": 3, "dir": 1, "loop": "11--11--"},
 				{"col": 2, "row": 6, "dir": 1, "loop": "--11--11"}
@@ -188,8 +197,9 @@ static func all_levels() -> Array:
 			"bpm": 108.0,
 			"tick_rate_ms": 480.0,
 			"letter_title": "维修委托 #9：延迟校准",
-			"letter_body": "脉冲先被固定弯管下转，再经过第二枚可编程弯管。你只需要设计第二段的 6 拍脚本。",
+			"letter_body": "Hi, I have an old MP3 player from my student days that I’d like to fix. It has a lot of music I used to listen to back then stored on it. Now it won’t turn on, and I can’t access any of the files inside. I’d like to know if it’s possible to repair it or at least recover the music from it. I’d really appreciate your help.",
 			"mask": "mp3",
+			"spectrum_rect": {"x": 735.0, "y": 846.0, "width": 875.0, "height": 76.0},
 			"turrets": [{"col": 1, "row": 3, "dir": 1, "loop": "1--1--"}],
 			"pipes": [
 				{"col": 5, "row": 3, "shape": "L", "rotation": 180, "loop": "-,-,-,-,-,-"},
@@ -203,11 +213,15 @@ static func all_levels() -> Array:
 			"bpm": 112.0,
 			"tick_rate_ms": 455.0,
 			"letter_title": "维修委托 #10：交叉声道分流",
-			"letter_body": "纵向炮台穿过 + 导线修复下方故障；横向连续炮台需要被右侧弯管分流。只要设计右侧弯管脚本。",
-			"mask": "mp3",
+			"letter_body": "Hello, I’d like to repair an old radio from my home. When I was younger, my family and I used to listen to it in the evenings, and it often played calm, quiet music. Now when I turn it on, it mostly produces static, and tuning doesn’t work properly anymore. I was hoping you could take a look and let me know if it can be repaired. Thank you for your time.",
+			"mask": "radio",
+			"cols": 14,
+			"rows": 10,
+			"board_rect": {"x": 809.0, "y": 171.0, "width": 1025.0, "height": 805.0},
+			"spectrum_rect": {"x": 905.0, "y": 798.0, "width": 843.0, "height": 76.0},
 			"turrets": [
 				{"col": 1, "row": 5, "dir": 1, "loop": "111111"},
-				{"col": 5, "row": 1, "dir": 2, "loop": "--1--1"}
+				{"col": 5, "row": 3, "dir": 2, "loop": "--1--1"}
 			],
 			"pipes": [
 				{"col": 5, "row": 5, "shape": "+", "rotation": 0, "loop": "-,-,-,-,-,-"},
@@ -216,30 +230,8 @@ static func all_levels() -> Array:
 			"solution_loops": ["-,-,-,-,-,-", "R,-,-,L,-,-"],
 			"targets": [
 				{"col": 5, "row": 8, "required": 2},
-				{"col": 8, "row": 2, "required": 2},
+				{"col": 8, "row": 3, "required": 2},
 				{"col": 8, "row": 8, "required": 2}
 			]
 		},
-		{
-			"name": "11",
-			"bpm": 112.0,
-			"tick_rate_ms": 455.0,
-			"letter_title": "维修委托 #11：交叉声道分流",
-			"letter_body": "纵向炮台穿过 + 导线修复下方故障；横向连续炮台需要被右侧弯管分流。只要设计右侧弯管脚本。",
-			"mask": "mp3",
-			"turrets": [
-				{"col": 1, "row": 5, "dir": 1, "loop": "111111"},
-				{"col": 5, "row": 1, "dir": 2, "loop": "--1--1"}
-			],
-			"pipes": [
-				{"col": 5, "row": 5, "shape": "+", "rotation": 0, "loop": "-,-,-,-,-,-"},
-				{"col": 8, "row": 5, "shape": "L", "rotation": 180, "loop": "-,-,-,-,-,-"}
-			],
-			"solution_loops": ["-,-,-,-,-,-", "R,-,-,L,-,-"],
-			"targets": [
-				{"col": 5, "row": 8, "required": 2},
-				{"col": 8, "row": 2, "required": 2},
-				{"col": 8, "row": 8, "required": 2}
-			]
-		}
 	]
