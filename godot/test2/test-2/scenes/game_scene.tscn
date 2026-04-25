@@ -7,6 +7,9 @@
 [ext_resource type="Texture2D" uid="uid://c3g2jhkvnlkia" path="res://ui/play.png" id="6_play"]
 [ext_resource type="Texture2D" uid="uid://b70jsjjmknxhh" path="res://ui/button.png" id="6_utbpp"]
 [ext_resource type="Texture2D" uid="uid://csbi4nf4pjfl8" path="res://ui/loop.png" id="7_loop"]
+[ext_resource type="FontFile" uid="uid://rdskr8mkkv7y" path="res://font/little-pixel.ttf" id="8_b5spy"]
+[ext_resource type="Script" uid="uid://2mtp6oplj842" path="res://scripts/pipe_editor_popup.gd" id="9_pipe"]
+[ext_resource type="Script" path="res://scripts/turret_action_track.gd" id="10_track"]
 
 [node name="GameScene" type="Control" unique_id=1166140879]
 layout_mode = 3
@@ -31,12 +34,13 @@ stretch_mode = 6
 [node name="LevelName" type="Label" parent="." unique_id=381783392]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 49.0
-offset_top = 54.0
-offset_right = 282.0
-offset_bottom = 82.0
-theme_override_font_sizes/font_size = 20
+offset_left = 38.0
+offset_top = 478.0
+offset_right = 360.0
+offset_bottom = 528.0
+theme_override_font_sizes/font_size = 18
 text = "当前关卡："
+autowrap_mode = 2
 
 [node name="SpectrumView" type="Control" parent="." unique_id=103163094]
 unique_name_in_owner = true
@@ -89,7 +93,16 @@ offset_right = 348.0
 offset_bottom = 478.0
 text = "状态：就绪"
 
-[node name="StepButton" type="Button" parent="." unique_id=1450466355]
+[node name="TurretActionTrack" type="Control" parent="." unique_id=1915654810]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 38.0
+offset_top = 530.0
+offset_right = 360.0
+offset_bottom = 606.0
+script = ExtResource("10_track")
+
+[node name="HelpButton" type="Button" parent="." unique_id=1450466355]
 custom_minimum_size = Vector2(0, 64)
 layout_mode = 0
 offset_left = 166.0
@@ -100,7 +113,7 @@ size_flags_horizontal = 3
 icon = ExtResource("6_utbpp")
 expand_icon = true
 
-[node name="Label" type="Label" parent="StepButton" unique_id=1376153663]
+[node name="Label" type="Label" parent="HelpButton" unique_id=1376153663]
 layout_mode = 0
 offset_right = 64.0
 offset_bottom = 64.0
@@ -108,28 +121,187 @@ text = "?"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="BoardPanel" type="PanelContainer" parent="." unique_id=1437924733]
+[node name="StepButton" type="Button" parent="." unique_id=1450466356]
+custom_minimum_size = Vector2(0, 64)
 layout_mode = 0
-offset_left = 500.0
-offset_top = 70.0
-offset_right = 990.0
-offset_bottom = 560.0
+offset_left = 230.0
+offset_top = 391.0
+offset_right = 294.0
+offset_bottom = 455.0
+size_flags_horizontal = 3
+icon = ExtResource("6_utbpp")
+expand_icon = true
+
+[node name="Label" type="Label" parent="StepButton" unique_id=1376153664]
+layout_mode = 0
+offset_right = 64.0
+offset_bottom = 64.0
+text = "N"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BoardPanel" type="Control" parent="." unique_id=1437924733]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 390.0
+offset_top = 24.0
+offset_right = -24.0
+offset_bottom = -24.0
+grow_horizontal = 2
+grow_vertical = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="BoardCenter" type="CenterContainer" parent="BoardPanel" unique_id=1460865041]
-layout_mode = 2
+[node name="BoardFill" type="ColorRect" parent="BoardPanel" unique_id=1437924734]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.07, 0.11, 0.08, 1)
 
-[node name="GameBoard" type="Control" parent="BoardPanel/BoardCenter" unique_id=1059646644]
+[node name="GameBoard" type="Control" parent="BoardPanel" unique_id=1059646644]
 unique_name_in_owner = true
-layout_mode = 2
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 12.0
+offset_top = 9.0
+offset_right = -8.0
+offset_bottom = -11.0
+grow_horizontal = 2
+grow_vertical = 2
 script = ExtResource("2_board")
 
 [node name="TickTimer" type="Timer" parent="." unique_id=1602440750]
 unique_name_in_owner = true
 wait_time = 0.5
 
+[node name="RichTextLabel" type="RichTextLabel" parent="." unique_id=1223529174]
+layout_mode = 0
+offset_left = 55.0
+offset_top = 38.0
+offset_right = 295.0
+offset_bottom = 85.0
+theme_override_colors/default_color = Color(0.101960786, 0.6666667, 0.03529412, 1)
+theme_override_fonts/normal_font = ExtResource("8_b5spy")
+theme_override_font_sizes/normal_font_size = 21
+text = "OPCODE SONATA"
+fit_content = true
+
+[node name="WinOverlay" type="ColorRect" parent="." unique_id=190000001]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.55)
+
+[node name="WinCard" type="PanelContainer" parent="WinOverlay" unique_id=190000002]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -180.0
+offset_top = -90.0
+offset_right = 180.0
+offset_bottom = 90.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="WinVBox" type="VBoxContainer" parent="WinOverlay/WinCard" unique_id=190000003]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="WinTitle" type="Label" parent="WinOverlay/WinCard/WinVBox" unique_id=190000004]
+layout_mode = 2
+theme_override_font_sizes/font_size = 26
+text = "修复完成"
+horizontal_alignment = 1
+
+[node name="WinHint" type="Label" parent="WinOverlay/WinCard/WinVBox" unique_id=190000005]
+unique_name_in_owner = true
+layout_mode = 2
+text = "是否进入下一关？"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="WinButtons" type="HBoxContainer" parent="WinOverlay/WinCard/WinVBox" unique_id=190000006]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ReplayButton" type="Button" parent="WinOverlay/WinCard/WinVBox/WinButtons" unique_id=190000007]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "重玩本关"
+
+[node name="NextLevelButton" type="Button" parent="WinOverlay/WinCard/WinVBox/WinButtons" unique_id=190000008]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "下一关"
+
+[node name="GuideOverlay" type="ColorRect" parent="." unique_id=190000009]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.45)
+
+[node name="GuideCard" type="PanelContainer" parent="GuideOverlay" unique_id=190000010]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -220.0
+offset_top = -120.0
+offset_right = 220.0
+offset_bottom = 120.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="GuideVBox" type="VBoxContainer" parent="GuideOverlay/GuideCard" unique_id=190000011]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="GuideTitle" type="Label" parent="GuideOverlay/GuideCard/GuideVBox" unique_id=190000012]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "新手引导"
+horizontal_alignment = 1
+
+[node name="GuideText" type="RichTextLabel" parent="GuideOverlay/GuideCard/GuideVBox" unique_id=190000013]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 120)
+layout_mode = 2
+autowrap_mode = 2
+
+[node name="GuideOkButton" type="Button" parent="GuideOverlay/GuideCard/GuideVBox" unique_id=190000014]
+layout_mode = 2
+text = "知道了"
+
+[node name="PipeEditorLayer" type="CanvasLayer" parent="." unique_id=1437924735]
+layer = 40
+script = ExtResource("9_pipe")
+
 [connection signal="pressed" from="PlayButton" to="." method="_on_play_button_pressed"]
 [connection signal="pressed" from="ResetButton" to="." method="_on_reset_button_pressed"]
+[connection signal="pressed" from="HelpButton" to="." method="_on_help_button_pressed"]
 [connection signal="pressed" from="StepButton" to="." method="_on_step_button_pressed"]
 [connection signal="timeout" from="TickTimer" to="." method="_on_tick_timer_timeout"]
+[connection signal="pressed" from="WinOverlay/WinCard/WinVBox/WinButtons/ReplayButton" to="." method="_on_replay_button_pressed"]
+[connection signal="pressed" from="WinOverlay/WinCard/WinVBox/WinButtons/NextLevelButton" to="." method="_on_next_level_button_pressed"]
+[connection signal="pressed" from="GuideOverlay/GuideCard/GuideVBox/GuideOkButton" to="." method="_on_guide_ok_button_pressed"]

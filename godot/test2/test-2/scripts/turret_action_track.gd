@@ -1,0 +1,92 @@
+extends Control
+class_name TurretActionTrack
+
+var _snapshot: Array = []
+var _pulse := 0.0
+
+
+func _ready() -> void:
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	set_process(false)
+
+
+func set_snapshot(snapshot: Array) -> void:
+	_snapshot = snapshot
+	_pulse = 1.0
+	set_process(true)
+	queue_redraw()
+
+
+func _process(delta: float) -> void:
+	_pulse = maxf(0.0, _pulse - delta * 3.8)
+	if _pulse <= 0.0:
+		set_process(false)
+	queue_redraw()
+
+
+func _draw() -> void:
+	var bg := Rect2(Vector2.ZERO, size)
+	draw_rect(bg, Color(0.015, 0.055, 0.025, 0.86), true)
+	draw_rect(bg, Color(0.20, 0.95, 0.38, 0.46), false, 1.0)
+	_draw_scanlines(bg)
+	draw_string(
+		ThemeDB.fallback_font,
+		Vector2(10, 18),
+		"炮台动作",
+		HORIZONTAL_ALIGNMENT_LEFT,
+		-1,
+		14,
+		Color(0.52, 1.0, 0.58, 0.95)
+	)
+	if _snapshot.is_empty():
+		draw_string(ThemeDB.fallback_font, Vector2(10, 42), "NO SIGNAL", HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color(0.28, 0.85, 0.38, 0.72))
+		return
+	var y := 34.0
+	for item in _snapshot:
+		_draw_turret_row(item, y)
+		y += 30.0
+
+
+func _draw_scanlines(rect: Rect2) -> void:
+	var y := rect.position.y + 4.0
+	while y < rect.end.y:
+		draw_line(Vector2(rect.position.x, y), Vector2(rect.end.x, y), Color(0.1, 0.35, 0.16, 0.16), 1.0)
+		y += 6.0
+
+
+func _draw_turret_row(item: Dictionary, y: float) -> void:
+	var label := "T%d" % int(item.get("id", 0))
+	draw_string(ThemeDB.fallback_font, Vector2(10, y + 16), label, HORIZONTAL_ALIGNMENT_LEFT, 34, 13, Color(0.65, 1.0, 0.67))
+	var script := String(item.get("script", ""))
+	if script.is_empty():
+		return
+	var active_idx := int(item.get("active_idx", 0))
+	var did_fire := bool(item.get("did_fire", false))
+	var x := 48.0
+	var cell_w := minf(24.0, maxf(14.0, (size.x - 60.0) / float(maxi(script.length(), 1))))
+	for i in range(script.length()):
+		var action := script.substr(i, 1)
+		var r := Rect2(Vector2(x + float(i) * cell_w, y), Vector2(cell_w - 4.0, 20.0))
+		var is_one := action == "1"
+		var is_active := i == active_idx
+		var fill := Color(0.03, 0.16, 0.07, 0.92)
+		var border := Color(0.22, 0.9, 0.36, 0.42)
+		if is_one:
+			fill = Color(0.08, 0.36, 0.14, 0.92)
+			border = Color(0.42, 1.0, 0.52, 0.72)
+		if is_active:
+			var glow := 0.55 + _pulse * 0.45
+			fill = Color(0.14, 0.78, 0.25, 0.62 + _pulse * 0.22) if did_fire else Color(0.08, 0.38, 0.16, 0.72)
+			border = Color(0.72, 1.0, 0.72, glow)
+			draw_rect(r.grow(4.0 + _pulse * 4.0), Color(0.24, 1.0, 0.34, 0.10 + _pulse * 0.18), false, 2.0)
+		draw_rect(r, fill, true)
+		draw_rect(r, border, false, 1.0)
+		draw_string(
+			ThemeDB.fallback_font,
+			Vector2(r.position.x + r.size.x * 0.5 - 4.0, r.position.y + 15.0),
+			action,
+			HORIZONTAL_ALIGNMENT_LEFT,
+			-1,
+			12,
+			Color(0.78, 1.0, 0.75, 0.95) if is_one else Color(0.28, 0.7, 0.36, 0.8)
+		)
