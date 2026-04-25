@@ -6,7 +6,7 @@ const PLAYLIST_TRACKS := [
 	{
 		"level_idx": 5,
 		"title": "CANON",
-		"path": "res://ui/Canon.mp3"
+		"path": "res://ui/clavier-music-pachelbelx27s-canon-canon-in-d-307319.mp3"
 	},
 	{
 		"level_idx": 6,
@@ -21,7 +21,7 @@ const PLAYLIST_TRACKS := [
 	{
 		"level_idx": 8,
 		"title": "SWAN LAKE",
-		"path": "res://ui/Swan Lake.mp3"
+		"path": "res://ui/lorenzobuczek-swan-lake-147751.mp3"
 	},
 	{
 		"level_idx": 9,

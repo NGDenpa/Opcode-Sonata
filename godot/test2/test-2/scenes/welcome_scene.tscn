@@ -71,11 +71,11 @@ flip_h = true
 
 [node name="playList" type="TextureButton" parent="." unique_id=1083103656]
 layout_mode = 0
-offset_left = 984.0
-offset_top = 404.00003
-offset_right = 2088.0
-offset_bottom = 1245.0
-scale = Vector2(0.6218182, 0.6490909)
+offset_left = 201.0
+offset_top = 374.0
+offset_right = 1305.0
+offset_bottom = 1215.0
+scale = Vector2(0.157, 0.164)
 texture_normal = ExtResource("8_08ct4")
 texture_pressed = ExtResource("9_5wa3u")
 texture_hover = ExtResource("10_b071u")
