@@ -75,12 +75,25 @@ func _draw_grid(cell: float, origin: Vector2) -> void:
 		)
 
 func _draw_turrets(cell: float, origin: Vector2) -> void:
-	for t in logic.turrets:
+	for i in range(logic.turrets.size()):
+		var t: Dictionary = logic.turrets[i]
 		var center := origin + Vector2((int(t["col"]) + 0.5) * cell, (int(t["row"]) + 0.5) * cell)
 		draw_circle(center, cell * 0.24, Color(0.45, 1.0, 0.55))
 		var dir_idx := int(t["dir"])
 		var dir_vec: Vector2 = Vector2(GameLogic.DIR_VEC[dir_idx].x, GameLogic.DIR_VEC[dir_idx].y)
 		draw_line(center, center + dir_vec * cell * 0.35, Color(0.8, 1, 0.8), maxf(2.0, cell * 0.06))
+		var label := str(i + 1)
+		var label_size := int(maxf(10.0, cell * 0.28))
+		draw_circle(center, cell * 0.16, Color(0.0, 0.07, 0.025, 0.72))
+		draw_string(
+			ThemeDB.fallback_font,
+			center + Vector2(-cell * 0.12, cell * 0.09),
+			label,
+			HORIZONTAL_ALIGNMENT_CENTER,
+			cell * 0.24,
+			label_size,
+			Color(0.86, 1.0, 0.72, 0.96)
+		)
 
 func _draw_targets(cell: float, origin: Vector2) -> void:
 	for t in logic.targets:

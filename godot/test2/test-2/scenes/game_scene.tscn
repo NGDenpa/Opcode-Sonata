@@ -13,6 +13,7 @@
 [ext_resource type="Script" uid="uid://dd3pot54kk3th" path="res://scripts/turret_action_track.gd" id="10_track"]
 [ext_resource type="Texture2D" uid="uid://b5c8oo2ncdg57" path="res://ui/home.svg" id="11_ldkr4"]
 [ext_resource type="Script" uid="uid://bdbh74nr3c12r" path="res://scripts/sound_fx.gd" id="11_sound"]
+[ext_resource type="Texture2D" uid="uid://bchpigndaf1j6" path="res://ui/duck.png" id="12_ldkr4"]
 [ext_resource type="Texture2D" uid="uid://14qq75te6mco" path="res://ui/next.svg" id="12_next"]
 
 [node name="GameScene" type="Control" unique_id=1166140879]
@@ -265,6 +266,28 @@ texture = ExtResource("12_next")
 expand_mode = 1
 stretch_mode = 5
 
+[node name="DuckButton" type="Button" parent="." unique_id=1006532684]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 0
+offset_left = 313.0
+offset_top = 395.0
+offset_right = 353.0
+offset_bottom = 435.0
+size_flags_horizontal = 3
+icon = ExtResource("6_utbpp")
+flat = true
+expand_icon = true
+
+[node name="Icon" type="TextureRect" parent="DuckButton" unique_id=870828808]
+layout_mode = 0
+offset_left = 4.0
+offset_top = 5.0
+offset_right = 34.0
+offset_bottom = 35.0
+texture = ExtResource("12_ldkr4")
+expand_mode = 1
+stretch_mode = 5
+
 [node name="HomeButton" type="Button" parent="." unique_id=1450466359]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 40)
@@ -416,6 +439,7 @@ script = ExtResource("11_sound")
 [connection signal="pressed" from="StepButton" to="." method="_on_step_button_pressed"]
 [connection signal="pressed" from="PrevLevelButton" to="." method="_on_prev_level_button_pressed"]
 [connection signal="pressed" from="NextLevelNavButton" to="." method="_on_next_level_nav_button_pressed"]
+[connection signal="pressed" from="DuckButton" to="." method="_on_duck_button_pressed"]
 [connection signal="pressed" from="HomeButton" to="." method="_on_home_button_pressed"]
 [connection signal="timeout" from="TickTimer" to="." method="_on_tick_timer_timeout"]
 [connection signal="pressed" from="WinOverlay/WinCard/WinVBox/WinButtons/ReplayButton" to="." method="_on_replay_button_pressed"]

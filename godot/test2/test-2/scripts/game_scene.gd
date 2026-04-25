@@ -19,6 +19,7 @@ const CIDAI_BOARD_RECT := Rect2(Vector2(762.0, 146.0), Vector2(1108.0, 820.0))
 @onready var reset_button: Button = $ResetButton
 @onready var help_button: Button = $HelpButton
 @onready var step_button: Button = $StepButton
+@onready var duck_button: Button = $DuckButton
 @onready var prev_level_button: Button = %PrevLevelButton
 @onready var next_level_nav_button: Button = %NextLevelNavButton
 @onready var home_button: Button = %HomeButton
@@ -26,6 +27,7 @@ const CIDAI_BOARD_RECT := Rect2(Vector2(762.0, 146.0), Vector2(1108.0, 820.0))
 @onready var win_hint: Label = %WinHint
 @onready var guide_overlay: ColorRect = $GuideOverlay
 @onready var guide_card: PanelContainer = $GuideOverlay/GuideCard
+@onready var guide_vbox: VBoxContainer = $GuideOverlay/GuideCard/GuideVBox
 @onready var guide_title: Label = $GuideOverlay/GuideCard/GuideVBox/GuideTitle
 @onready var guide_text: RichTextLabel = %GuideText
 @onready var guide_ok_button: Button = $GuideOverlay/GuideCard/GuideVBox/GuideOkButton
@@ -39,8 +41,11 @@ var playing: bool = false
 var shown_guides := {}
 var current_mask_name := ""
 var _last_total_hits := 0
+var _solution_apply_button: Button
+var _guide_mode := "guide"
 
 func _ready() -> void:
+	_ensure_solution_preview_buttons()
 	_apply_terminal_popup_styles()
 	resized.connect(_layout_board_panel)
 	levels = LevelData.all_levels()
@@ -161,41 +166,145 @@ func _on_home_button_pressed() -> void:
 	get_tree().change_scene_to_file("res://scenes/welcome_scene.tscn")
 
 func _show_guide_if_needed() -> void:
-	if current_level_idx > 11:
-		return
 	if shown_guides.has(current_level_idx):
 		return
+	var level: Dictionary = levels[current_level_idx]
+	var guide_body := String(level.get("guide_text", ""))
+	if guide_body.strip_edges().is_empty():
+		return
 	var level_name := String(levels[current_level_idx].get("name", ""))
-	var guide_lines: PackedStringArray = [
-		"欢迎，维修工。\n\n目标是把洞的待填充数降到 0。炮台动作中的 1 会发射，- 会停一拍。可以按 N 单步观察。",
-		"新认知：节拍密度。\n\n1-1- 比 1--- 更频繁发射。观察左侧炮台动作轨道的扫描框。",
-		"新认知：固定弯管。\n\n脉冲进入弯管后会改变方向。本关只观察路径，不需要编辑脚本。",
-		"新认知：到达前旋转。\n\n水管每个 Tick 都先执行脚本，再移动脉冲。这里 R 会在脉冲到达前把弯管转正。",
-		"新认知：连续转向。\n\n两个弯管可以组成折线路径。注意每个脉冲会一格一格前进。",
-		"新挑战：多炮台多故障。\n\n动作轨道每行对应一个炮台。两个洞都要填满，注意它们的发射节拍不同。",
-		"最终校准：LR 交替分流。\n\n炮台连续发射，弯管按 R,L,R,L 来回摆动。观察子弹如何被轮流送进两个洞。",
-		"进阶：六拍分流。\n\n炮台连续发射，但弯管脚本是 6 拍。注意 R 和 L 中间的停顿会改变命中节奏。",
-		"进阶：错拍双分流。\n\n两个炮台使用 8 拍文本错开发射，两枚弯管也用 8 拍脚本。观察每路脉冲抵达弯管时的方向。",
-		"进阶：两段延迟。\n\n第一枚弯管固定下转，第二枚弯管按 6 拍旋转。路径距离会决定它到达时是否对上角度。",
-		"进阶：十字与分流。\n\n+ 导线处理纵向通路，右侧弯管处理横向分流。两种机制会同时工作。",
-		"终检：八拍双分流。\n\n两个炮台连续发射，两枚弯管使用 8 拍 LR 脚本。四个洞都需要被节拍正确填满。"
-	]
-	guide_title.text = "维修指引"
-	guide_text.text = guide_lines[current_level_idx]
+	_guide_mode = "guide"
+	guide_title.text = String(level.get("guide_title", "维修指引"))
+	guide_text.text = guide_body
+	guide_ok_button.text = "知道了"
+	if _solution_apply_button != null:
+		_solution_apply_button.visible = false
 	guide_overlay.visible = true
 	shown_guides[current_level_idx] = true
 	status_label.text = "状态：引导中 - %s" % level_name
 
 func _on_guide_ok_button_pressed() -> void:
 	guide_overlay.visible = false
-	status_label.text = "状态：就绪"
+	if _guide_mode == "solution":
+		status_label.text = "状态：已退出解法预览"
+	else:
+		status_label.text = "状态：就绪"
+	_guide_mode = "guide"
 
 
 func _on_help_button_pressed() -> void:
+	_guide_mode = "guide"
 	guide_title.text = "指令说明"
 	guide_text.text = "指令说明\n\n炮台动作：\n1 = 发射一个脉冲\n- = 静默一拍\n\n导线脚本：\nR = 顺时针旋转 90°\nL = 逆时针旋转 90°\n- = 保持不动\n\n操作：\n点击弯管 = 打开导线脚本编辑\nShift + 点击弯管 = 手动逆时针旋转\nN = 单步执行一个 Tick"
+	guide_ok_button.text = "知道了"
+	if _solution_apply_button != null:
+		_solution_apply_button.visible = false
 	guide_overlay.visible = true
 	status_label.text = "状态：查看指令说明"
+
+
+func _on_duck_button_pressed() -> void:
+	_show_solution_preview()
+
+
+func _ensure_solution_preview_buttons() -> void:
+	if _solution_apply_button != null:
+		return
+	var button_row := HBoxContainer.new()
+	button_row.name = "SolutionButtons"
+	button_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	button_row.add_theme_constant_override("separation", 8)
+	guide_vbox.remove_child(guide_ok_button)
+	guide_vbox.add_child(button_row)
+	_solution_apply_button = Button.new()
+	_solution_apply_button.name = "ApplySolutionButton"
+	_solution_apply_button.text = "确定"
+	_solution_apply_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_solution_apply_button.pressed.connect(_on_apply_solution_button_pressed)
+	button_row.add_child(_solution_apply_button)
+	guide_ok_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	button_row.add_child(guide_ok_button)
+	_solution_apply_button.visible = false
+
+
+func _show_solution_preview() -> void:
+	var entries: Array[Dictionary] = _solution_loop_entries()
+	_guide_mode = "solution"
+	guide_title.text = "关卡解法"
+	guide_ok_button.text = "退出解法预览"
+	if _solution_apply_button != null:
+		_solution_apply_button.visible = true
+		_solution_apply_button.disabled = entries.is_empty()
+	if entries.is_empty():
+		guide_text.text = "当前关卡没有可应用的解法。\n\n全为 - 的空脚本会被忽略。"
+	else:
+		var lines: PackedStringArray = ["将应用以下非空导线脚本："]
+		for entry in entries:
+			lines.append(
+				"P%d (%s @ %d,%d): %s" % [
+					int(entry["index"]) + 1,
+					String(entry["shape"]),
+					int(entry["col"]),
+					int(entry["row"]),
+					String(entry["loop"])
+				]
+			)
+		lines.append("\n点击“确定”会把这些脚本写入当前关卡。")
+		guide_text.text = "\n".join(lines)
+	guide_overlay.visible = true
+	status_label.text = "状态：解法预览"
+
+
+func _on_apply_solution_button_pressed() -> void:
+	if not _can_edit_pipes():
+		status_label.text = "状态：运行后不可应用解法，请重置后再试"
+		return
+	var entries: Array[Dictionary] = _solution_loop_entries()
+	if entries.is_empty():
+		status_label.text = "状态：当前关卡没有可应用的解法"
+		return
+	for entry in entries:
+		var err := logic.set_pipe_loop_by_id(int(entry["index"]), String(entry["loop"]))
+		if err != "":
+			status_label.text = "状态：%s" % err
+			return
+	guide_overlay.visible = false
+	_guide_mode = "guide"
+	board.queue_redraw()
+	_refresh_turret_action_track()
+	status_label.text = "状态：已应用关卡解法"
+
+
+func _solution_loop_entries() -> Array[Dictionary]:
+	var entries: Array[Dictionary] = []
+	if levels.is_empty() or current_level_idx < 0 or current_level_idx >= levels.size():
+		return entries
+	var level: Dictionary = levels[current_level_idx]
+	var solution_loops := level.get("solution_loops", []) as Array
+	var pipe_defs := level.get("pipes", []) as Array
+	for i in range(mini(solution_loops.size(), pipe_defs.size())):
+		var loop_text := String(solution_loops[i])
+		if _is_empty_solution_loop(loop_text):
+			continue
+		var pipe_def := pipe_defs[i] as Dictionary
+		entries.append({
+			"index": i,
+			"loop": loop_text,
+			"shape": String(pipe_def.get("shape", "?")),
+			"col": int(pipe_def.get("col", 0)),
+			"row": int(pipe_def.get("row", 0))
+		})
+	return entries
+
+
+func _is_empty_solution_loop(loop_text: String) -> bool:
+	var clean := loop_text.strip_edges()
+	if clean.is_empty():
+		return true
+	for token in clean.split(","):
+		if token.strip_edges() != "-":
+			return false
+	return true
 
 
 func _on_board_pipe_clicked(pipe: Dictionary, shift_pressed: bool, click_global: Vector2) -> void:
@@ -342,7 +451,7 @@ func _refresh_level_info() -> void:
 	var remaining: int = maxi(0, total_required - total_hits)
 	var level_name := String(levels[current_level_idx].get("name", ""))
 	level_name_label.text = "当前关卡：%s" % [level_name]
-	to_fill_label.text = "洞待填充：%d / %d\n%s" % [remaining, total_required, _level_grid_info_text()]
+	to_fill_label.text = "洞待填充：%d / %d" % [remaining, total_required]
 
 
 func _level_grid_info_text() -> String:
@@ -394,6 +503,7 @@ func _bind_all_icon_button_fx() -> void:
 		reset_button,
 		help_button,
 		step_button,
+		duck_button,
 		prev_level_button,
 		next_level_nav_button,
 		home_button
@@ -419,7 +529,11 @@ func _bind_icon_button_fx(button: Button) -> void:
 
 func _apply_icon_button_fx(button: Button, hovered: bool, pressed: bool) -> void:
 	var targets := _button_fx_targets(button)
+	if button == duck_button:
+		button.self_modulate = Color.WHITE if hovered else Color(0.34, 1.0, 0.36, 1.0)
 	if button.disabled:
+		if button == duck_button:
+			button.self_modulate = Color(0.18, 0.35, 0.18, 0.42)
 		for target in targets:
 			target.self_modulate = Color(0.18, 0.35, 0.18, 0.42)
 			target.scale = Vector2.ONE
@@ -484,6 +598,15 @@ func _apply_terminal_popup_styles() -> void:
 	guide_ok_button.add_theme_color_override("font_color", Color(0.72, 1.0, 0.68, 1.0))
 	guide_ok_button.add_theme_color_override("font_hover_color", Color(0.92, 1.0, 0.78, 1.0))
 	guide_ok_button.add_theme_color_override("font_pressed_color", Color(0.02, 0.12, 0.04, 1.0))
+	if _solution_apply_button != null:
+		_solution_apply_button.add_theme_stylebox_override("normal", _terminal_button_style(Color(0.02, 0.13, 0.05, 0.94), Color(0.25, 0.9, 0.36, 0.66)))
+		_solution_apply_button.add_theme_stylebox_override("hover", _terminal_button_style(Color(0.04, 0.22, 0.08, 0.96), Color(0.58, 1.0, 0.56, 0.86)))
+		_solution_apply_button.add_theme_stylebox_override("pressed", _terminal_button_style(Color(0.42, 1.0, 0.44, 0.92), Color(0.82, 1.0, 0.76, 1.0)))
+		_solution_apply_button.add_theme_stylebox_override("disabled", _terminal_button_style(Color(0.02, 0.08, 0.04, 0.55), Color(0.16, 0.42, 0.18, 0.45)))
+		_solution_apply_button.add_theme_color_override("font_color", Color(0.72, 1.0, 0.68, 1.0))
+		_solution_apply_button.add_theme_color_override("font_hover_color", Color(0.92, 1.0, 0.78, 1.0))
+		_solution_apply_button.add_theme_color_override("font_pressed_color", Color(0.02, 0.12, 0.04, 1.0))
+		_solution_apply_button.add_theme_color_override("font_disabled_color", Color(0.38, 0.58, 0.38, 0.72))
 	letter_text.add_theme_stylebox_override("normal", _terminal_text_style())
 	letter_text.add_theme_color_override("default_color", Color(0.72, 1.0, 0.68, 0.94))
 	letter_text.add_theme_font_size_override("normal_font_size", 8)

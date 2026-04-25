@@ -41,10 +41,14 @@ func _draw() -> void:
 	if _snapshot.is_empty():
 		draw_string(ThemeDB.fallback_font, Vector2(10, 42), "NO SIGNAL", HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color(0.28, 0.85, 0.38, 0.72))
 		return
+	var available_h := maxf(12.0, size.y - 38.0)
+	var row_h := minf(30.0, available_h / float(maxi(_snapshot.size(), 1)))
 	var y := 34.0
 	for item in _snapshot:
-		_draw_turret_row(item, y)
-		y += 30.0
+		if y + row_h > size.y - 2.0:
+			break
+		_draw_turret_row(item, y, row_h)
+		y += row_h
 
 
 func _draw_scanlines(rect: Rect2) -> void:
@@ -54,19 +58,22 @@ func _draw_scanlines(rect: Rect2) -> void:
 		y += 6.0
 
 
-func _draw_turret_row(item: Dictionary, y: float) -> void:
+func _draw_turret_row(item: Dictionary, y: float, row_h: float) -> void:
 	var label := "T%d" % int(item.get("id", 0))
-	draw_string(ThemeDB.fallback_font, Vector2(10, y + 16), label, HORIZONTAL_ALIGNMENT_LEFT, 34, 13, Color(0.65, 1.0, 0.67))
+	var font_size := int(clampf(row_h * 0.45, 8.0, 13.0))
+	draw_string(ThemeDB.fallback_font, Vector2(10, y + row_h * 0.58), label, HORIZONTAL_ALIGNMENT_LEFT, 34, font_size, Color(0.65, 1.0, 0.67))
 	var script := String(item.get("script", ""))
 	if script.is_empty():
 		return
 	var active_idx := int(item.get("active_idx", 0))
 	var did_fire := bool(item.get("did_fire", false))
 	var x := 48.0
-	var cell_w := minf(24.0, maxf(14.0, (size.x - 60.0) / float(maxi(script.length(), 1))))
+	var gap := 2.0
+	var cell_w := minf(24.0, maxf(5.0, (size.x - x - 8.0) / float(maxi(script.length(), 1))))
+	var cell_h := clampf(row_h - 8.0, 7.0, 20.0)
 	for i in range(script.length()):
 		var action := script.substr(i, 1)
-		var r := Rect2(Vector2(x + float(i) * cell_w, y), Vector2(cell_w - 4.0, 20.0))
+		var r := Rect2(Vector2(x + float(i) * cell_w, y + 1.0), Vector2(maxf(2.0, cell_w - gap), cell_h))
 		var is_one := action == "1"
 		var is_active := i == active_idx
 		var fill := Color(0.03, 0.16, 0.07, 0.92)
@@ -81,12 +88,13 @@ func _draw_turret_row(item: Dictionary, y: float) -> void:
 			draw_rect(r.grow(4.0 + _pulse * 4.0), Color(0.24, 1.0, 0.34, 0.10 + _pulse * 0.18), false, 2.0)
 		draw_rect(r, fill, true)
 		draw_rect(r, border, false, 1.0)
-		draw_string(
-			ThemeDB.fallback_font,
-			Vector2(r.position.x + r.size.x * 0.5 - 4.0, r.position.y + 15.0),
-			action,
-			HORIZONTAL_ALIGNMENT_LEFT,
-			-1,
-			12,
-			Color(0.78, 1.0, 0.75, 0.95) if is_one else Color(0.28, 0.7, 0.36, 0.8)
-		)
+		if cell_w >= 9.0 and cell_h >= 10.0:
+			draw_string(
+				ThemeDB.fallback_font,
+				Vector2(r.position.x + r.size.x * 0.5 - 4.0, r.position.y + cell_h * 0.72),
+				action,
+				HORIZONTAL_ALIGNMENT_LEFT,
+				-1,
+				int(mini(font_size, 12)),
+				Color(0.78, 1.0, 0.75, 0.95) if is_one else Color(0.28, 0.7, 0.36, 0.8)
+			)
