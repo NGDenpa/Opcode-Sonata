@@ -121,14 +121,15 @@ func _step_logic() -> void:
 	logic.step_tick()
 	spectrum.kick()
 	board.set_step_feedback(logic.last_step_feedback, tick_timer.wait_time)
-	_play_step_sounds()
 	if logic.is_win():
 		playing = false
 		tick_timer.stop()
 		status_label.text = "STATUS: REPAIR COMPLETE"
 		GameProgress.unlock(current_level_idx + 1)
-		sound_fx.play_win()
+		sound_fx.stop_transient_tones()
 		_show_win_overlay()
+	else:
+		_play_step_sounds()
 	_refresh_turret_action_track()
 	_refresh_level_info()
 	_update_level_nav_buttons()
@@ -187,6 +188,7 @@ func _show_thanks_for_playing() -> void:
 	_guide_mode = "ending"
 	guide_title.text = "THANKS FOR PLAYING"
 	guide_text.text = "Thank you for repairing every loop."
+	guide_text.add_theme_font_size_override("normal_font_size", 15)
 	guide_ok_button.text = "TITLE"
 	if _solution_apply_button != null:
 		_solution_apply_button.visible = false
@@ -213,6 +215,7 @@ func _show_guide_if_needed() -> void:
 	_guide_mode = "guide"
 	guide_title.text = String(level.get("guide_title", "Repair Guide"))
 	guide_text.text = guide_body
+	guide_text.add_theme_font_size_override("normal_font_size", 15)
 	guide_ok_button.text = "OK"
 	if _solution_apply_button != null:
 		_solution_apply_button.visible = false
@@ -236,6 +239,7 @@ func _on_help_button_pressed() -> void:
 	_guide_mode = "guide"
 	guide_title.text = "COMMAND MANUAL"
 	guide_text.text = "Command Manual\n\nEmitter actions:\n1 = fire one pulse\n- = wait one beat\n\nPipe assembly:\nrot R = rotate 90 degrees clockwise\nrot L = rotate 90 degrees counterclockwise\nslp = hold position\n\nControls:\nClick a pipe = open pipe script editor\nShift + click a pipe = manually rotate counterclockwise\nN = step one tick"
+	guide_text.add_theme_font_size_override("normal_font_size", 15)
 	guide_ok_button.text = "OK"
 	if _solution_apply_button != null:
 		_solution_apply_button.visible = false
@@ -274,6 +278,7 @@ func _show_solution_preview() -> void:
 		return
 	_guide_mode = "solution"
 	guide_title.text = "LEVEL SOLUTION"
+	guide_text.add_theme_font_size_override("normal_font_size", 11)
 	guide_ok_button.text = "EXIT PREVIEW"
 	if _solution_apply_button != null:
 		_solution_apply_button.visible = true
@@ -283,7 +288,7 @@ func _show_solution_preview() -> void:
 		lines.append(
 			"P%d: %s" % [
 				int(entry["index"]) + 1,
-				String(entry["loop"])
+				_loop_csv_to_assembly(String(entry["loop"]))
 			]
 		)
 	lines.append("\nClick CONFIRM to write these scripts into the current level.")
@@ -343,6 +348,19 @@ func _is_empty_solution_loop(loop_text: String) -> bool:
 		if token.strip_edges() != "-":
 			return false
 	return true
+
+
+func _loop_csv_to_assembly(loop_text: String) -> String:
+	var tokens: PackedStringArray = []
+	for token in loop_text.split(","):
+		match token.strip_edges().to_upper():
+			"R":
+				tokens.append("rot R")
+			"L":
+				tokens.append("rot L")
+			_:
+				tokens.append("slp")
+	return ", ".join(tokens)
 
 
 func _update_duck_button_state() -> void:
@@ -627,6 +645,7 @@ func _configure_level_music(level: Dictionary) -> void:
 		sound_fx.clear_phrase()
 	else:
 		sound_fx.configure_phrase(phrase, tick_timer.wait_time)
+	sound_fx.configure_music_track(String(level.get("music_track", "")))
 
 
 func _total_hits() -> int:

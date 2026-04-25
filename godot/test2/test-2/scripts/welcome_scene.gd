@@ -155,8 +155,7 @@ func _show_level_select() -> void:
 	var levels := LevelData.all_levels()
 	for i in range(levels.size()):
 		var btn := Button.new()
-		var name := String((levels[i] as Dictionary).get("name", "Level %d" % (i + 1)))
-		btn.text = "%02d\n%s" % [i + 1, name]
+		btn.text = "%02d" % [i + 1]
 		btn.custom_minimum_size = Vector2(92, 58)
 		_style_terminal_button(btn)
 		btn.disabled = not GameProgress.can_open(i)

@@ -8,6 +8,7 @@ const TAU_F := PI * 2.0
 @export_range(0.0, 1.0) var volume := 0.75
 
 var _player: AudioStreamPlayer
+var _music_player: AudioStreamPlayer
 var _playback: AudioStreamGeneratorPlayback
 var _tones: Array[Dictionary] = []
 var _phrase_tokens: PackedStringArray = []
@@ -15,6 +16,7 @@ var _hit_note_idx := 0
 var _loop_note_idx := 0
 var _loop_timer: Timer
 var _phrase_beat_duration := 0.5
+var _music_track_path := ""
 
 
 func _ready() -> void:
@@ -28,6 +30,9 @@ func _ready() -> void:
 	add_child(_player)
 	_player.play()
 	_playback = _player.get_stream_playback() as AudioStreamGeneratorPlayback
+	_music_player = AudioStreamPlayer.new()
+	_music_player.volume_db = -4.0
+	add_child(_music_player)
 	_loop_timer = Timer.new()
 	_loop_timer.one_shot = false
 	_loop_timer.timeout.connect(_on_loop_timer_timeout)
@@ -55,6 +60,10 @@ func play_win() -> void:
 	play_tone(990.0, 0.14, "triangle", 0.065, 1320.0)
 
 
+func stop_transient_tones() -> void:
+	_tones.clear()
+
+
 func play_tone(freq: float, duration: float, wave: String, tone_volume: float, slide_to: float = -1.0) -> void:
 	if not enabled:
 		return
@@ -78,10 +87,18 @@ func configure_phrase(phrase: String, beat_duration: float) -> void:
 	stop_phrase_loop()
 
 
+func configure_music_track(path: String) -> void:
+	_music_track_path = path
+	if _music_player != null:
+		_music_player.stop()
+		_music_player.stream = null
+
+
 func clear_phrase() -> void:
 	_phrase_tokens = []
 	_hit_note_idx = 0
 	_loop_note_idx = 0
+	_music_track_path = ""
 	stop_phrase_loop()
 
 
@@ -98,6 +115,8 @@ func play_phrase_hit_note() -> bool:
 
 
 func start_phrase_loop() -> void:
+	if _start_music_track_loop():
+		return
 	if _phrase_tokens.is_empty() or _loop_timer == null:
 		return
 	_loop_note_idx = 0
@@ -109,6 +128,27 @@ func start_phrase_loop() -> void:
 func stop_phrase_loop() -> void:
 	if _loop_timer != null:
 		_loop_timer.stop()
+	if _music_player != null:
+		_music_player.stop()
+
+
+func _start_music_track_loop() -> bool:
+	if _music_track_path.is_empty() or _music_player == null:
+		return false
+	if not ResourceLoader.exists(_music_track_path):
+		return false
+	var stream := load(_music_track_path) as AudioStream
+	if stream == null:
+		return false
+	if stream is AudioStreamMP3:
+		(stream as AudioStreamMP3).loop = true
+	elif stream is AudioStreamOggVorbis:
+		(stream as AudioStreamOggVorbis).loop = true
+	elif stream is AudioStreamWAV:
+		(stream as AudioStreamWAV).loop_mode = AudioStreamWAV.LOOP_FORWARD
+	_music_player.stream = stream
+	_music_player.play()
+	return true
 
 
 func _on_loop_timer_timeout() -> void:
