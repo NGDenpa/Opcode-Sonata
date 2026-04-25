@@ -10,6 +10,11 @@ const TAU_F := PI * 2.0
 var _player: AudioStreamPlayer
 var _playback: AudioStreamGeneratorPlayback
 var _tones: Array[Dictionary] = []
+var _phrase_tokens: PackedStringArray = []
+var _hit_note_idx := 0
+var _loop_note_idx := 0
+var _loop_timer: Timer
+var _phrase_beat_duration := 0.5
 
 
 func _ready() -> void:
@@ -23,6 +28,10 @@ func _ready() -> void:
 	add_child(_player)
 	_player.play()
 	_playback = _player.get_stream_playback() as AudioStreamGeneratorPlayback
+	_loop_timer = Timer.new()
+	_loop_timer.one_shot = false
+	_loop_timer.timeout.connect(_on_loop_timer_timeout)
+	add_child(_loop_timer)
 	set_process(true)
 
 
@@ -59,6 +68,110 @@ func play_tone(freq: float, duration: float, wave: String, tone_volume: float, s
 		"wave": wave,
 		"volume": tone_volume * volume
 	})
+
+
+func configure_phrase(phrase: String, beat_duration: float) -> void:
+	_phrase_tokens = _parse_phrase(phrase)
+	_phrase_beat_duration = maxf(0.08, beat_duration)
+	_hit_note_idx = 0
+	_loop_note_idx = 0
+	stop_phrase_loop()
+
+
+func clear_phrase() -> void:
+	_phrase_tokens = []
+	_hit_note_idx = 0
+	_loop_note_idx = 0
+	stop_phrase_loop()
+
+
+func has_phrase() -> bool:
+	return not _phrase_tokens.is_empty()
+
+
+func play_phrase_hit_note() -> bool:
+	if _phrase_tokens.is_empty():
+		return false
+	_play_phrase_token(_phrase_tokens[_hit_note_idx])
+	_hit_note_idx = (_hit_note_idx + 1) % _phrase_tokens.size()
+	return true
+
+
+func start_phrase_loop() -> void:
+	if _phrase_tokens.is_empty() or _loop_timer == null:
+		return
+	_loop_note_idx = 0
+	_loop_timer.wait_time = _phrase_beat_duration
+	_loop_timer.start()
+	_on_loop_timer_timeout()
+
+
+func stop_phrase_loop() -> void:
+	if _loop_timer != null:
+		_loop_timer.stop()
+
+
+func _on_loop_timer_timeout() -> void:
+	if _phrase_tokens.is_empty():
+		stop_phrase_loop()
+		return
+	_play_phrase_token(_phrase_tokens[_loop_note_idx])
+	_loop_note_idx = (_loop_note_idx + 1) % _phrase_tokens.size()
+
+
+func _play_phrase_token(token: String) -> void:
+	var clean := token.strip_edges().to_upper()
+	if clean == "-" or clean.is_empty():
+		return
+	var freq := _note_frequency(clean)
+	if freq <= 0.0:
+		return
+	play_tone(freq, _phrase_beat_duration * 0.76, "triangle", 0.075)
+
+
+func _parse_phrase(phrase: String) -> PackedStringArray:
+	var tokens: PackedStringArray = []
+	for token in phrase.split(" ", false):
+		var clean := token.strip_edges()
+		if not clean.is_empty():
+			tokens.append(clean)
+	return tokens
+
+
+func _note_frequency(note: String) -> float:
+	var octave_shift := 0
+	while note.ends_with("*"):
+		octave_shift += 1
+		note = note.substr(0, note.length() - 1)
+	var semitone := 0
+	match note:
+		"C":
+			semitone = -9
+		"C#":
+			semitone = -8
+		"D":
+			semitone = -7
+		"D#":
+			semitone = -6
+		"E":
+			semitone = -5
+		"F":
+			semitone = -4
+		"F#":
+			semitone = -3
+		"G":
+			semitone = -2
+		"G#":
+			semitone = -1
+		"A":
+			semitone = 0
+		"A#":
+			semitone = 1
+		"B":
+			semitone = 2
+		_:
+			return 0.0
+	return 440.0 * pow(2.0, float(semitone + octave_shift * 12) / 12.0)
 
 
 func _process(_delta: float) -> void:
