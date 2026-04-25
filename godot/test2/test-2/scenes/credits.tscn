@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://c3jdf7g4o34w6" path="res://scenes/credits.gd" id="1_2fbfq"]
 [ext_resource type="FontFile" uid="uid://clnkvecvleou0" path="res://font/pixel-highscore.ttf" id="2_0ctdu"]
-[ext_resource type="Script" uid="uid://lsntv7aqw4aw" path="res://scripts/scanline_background.gd" id="2_8gwij"]
+[ext_resource type="Script" path="res://scripts/scanline_background.gd" id="2_8gwij"]
 [ext_resource type="Texture2D" uid="uid://6dp4pk2y17xx" path="res://ui/loop.svg" id="4_8gwij"]
 [ext_resource type="FontFile" uid="uid://rdskr8mkkv7y" path="res://font/little-pixel.ttf" id="5_mah5v"]
 
@@ -10,14 +10,16 @@
 script = ExtResource("1_2fbfq")
 
 [node name="ScanlineBackground" type="Control" parent="." unique_id=1573980084]
+layout_mode = 3
+anchors_preset = 0
 offset_right = 1850.0
 offset_bottom = 1650.0
 script = ExtResource("2_8gwij")
 
 [node name="Label" type="Label" parent="." unique_id=183259278]
-offset_left = 337.0
+offset_left = 344.0
 offset_top = 43.0
-offset_right = 808.0
+offset_right = 815.0
 offset_bottom = 112.0
 theme_override_fonts/font = ExtResource("2_0ctdu")
 theme_override_font_sizes/font_size = 51
@@ -31,7 +33,34 @@ offset_top = 162.0
 offset_right = 1043.0
 offset_bottom = 581.0
 theme_override_fonts/normal_font = ExtResource("5_mah5v")
-text = "123123123123123"
+text = "OPCODE SONATA
+For Gamedev.js Jam 2026 - Theme: Machines
+CHALLENGES 1/2/3
+
+ENGINE
+Godot 4.6
+
+
+FONTS
+Pixel Highscore by Alex Hinton
+Little Pixel by Ly97
+
+MUSIC
+Antonio Vivaldi - Violin Concerto in E major, RV 269 'Spring' - I. Allegro
+
+Mozart - Eine Kleine Nachtmusik / Serenade in G major
+
+Pachelbel - Canon in D Major
+Music by Clavier Clavier from Pixabay
+
+Franz Schubert - Marche militaire in D, D. 733 no. 1 
+
+Tchaikovsky - Swan Lake
+Music by LAURENT BUCZEK from Pixabay
+
+"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="TextureButton" type="TextureButton" parent="." unique_id=1617984895]
 offset_left = 92.0
