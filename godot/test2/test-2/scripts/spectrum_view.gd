@@ -25,8 +25,10 @@ func _draw() -> void:
 	draw_rect(Rect2(Vector2.ZERO, size), Color(0.02, 0.08, 0.04, 0.16), true)
 	var gap := 3.0
 	var bw := (size.x - gap * float(bar_count + 1)) / float(bar_count)
+	var center_y := size.y * 0.5
+	draw_line(Vector2(0.0, center_y), Vector2(size.x, center_y), Color(0.45, 1.0, 0.5, 0.08), 1.0)
 	for i in range(bar_count):
 		var h := _values[i] * (size.y - 10.0)
 		var x := gap + i * (bw + gap)
-		var y := size.y - h - 4.0
+		var y := center_y - h * 0.5
 		draw_rect(Rect2(x, y, bw, h), Color(0.45, 1.0, 0.5, 0.20 + pulse * 0.22), true)

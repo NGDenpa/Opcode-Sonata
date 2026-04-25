@@ -10,6 +10,10 @@ static func all_levels() -> Array:
 			"letter_title": "维修委托 #01：小熊不唱歌了",
 			"letter_body": "维修工你好：\n\n先确认最基础的脉冲。炮台动作里的 1 会发射，- 会停一拍。让脉冲填满右侧的洞。\n\n—— 小雨（7岁）",
 			"mask": "mp3",
+			"cols": 10,
+			"rows": 10,
+			"board_rect": {"x": 732.0, "y": 137.0, "width": 875.0, "height": 835.0},
+			"spectrum_rect": {"x": 732.0, "y": 880.0, "width": 875.0, "height": 76.0},
 			"turrets": [{"col": 1, "row": 5, "dir": 1, "loop": "1-1-"}],
 			"pipes": [
 				{"col": 4, "row": 5, "shape": "I", "rotation": 90, "loop": "-,-,-,-"},
@@ -74,7 +78,10 @@ static func all_levels() -> Array:
 			"tick_rate_ms": 480.0,
 			"letter_title": "维修委托 #06：双声道失衡",
 			"letter_body": "唱片机有两个声道失衡。每一行炮台动作对应一个炮台，两个故障点都要被填满。",
-			"mask": "mp3",
+			"mask": "radio",
+			"cols": 14,
+			"rows": 10,
+			"board_rect": {"x": 820.0, "y": 137.0, "width": 1000.0, "height": 1000.0},
 			"turrets": [
 				{"col": 2, "row": 5, "dir": 1, "loop": "11111111"},
 			],
@@ -92,7 +99,10 @@ static func all_levels() -> Array:
 			"tick_rate_ms": 500.0,
 			"letter_title": "维修委托 #6：忽亮忽灭的 MP3",
 			"letter_body": "最后这个 MP3 需要把连续脉冲分流到两个故障点。弯管会按 R,L,R,L 来回摆动，让子弹轮流进入两个洞。",
-			"mask": "mp3",
+			"mask": "yinxiang",
+			"cols": 10,
+			"rows": 10,
+			"board_rect": {"x": 900.0, "y": 130.0, "width": 875.0, "height": 835.0},
 			"turrets": [
 				{"col": 4, "row": 3, "dir": 2, "loop": "11--"},
 				{"col": 5, "row": 3, "dir": 2, "loop": "--11"},
@@ -121,15 +131,31 @@ static func all_levels() -> Array:
 			"tick_rate_ms": 450.0,
 			"letter_title": "维修委托 #7：分流器过载",
 			"letter_body": "这个 MP3 会连续吐出脉冲。你需要给唯一的弯管写 6 拍脚本，让连续脉冲被分成上下两路。",
-			"mask": "mp3",
-			"turrets": [{"col": 1, "row": 5, "dir": 1, "loop": "111111"}],
+			"mask": "laba",
+			"cols": 13,
+			"rows": 11,
+			"board_rect": {"x": 900.0, "y": 100.0, "width": 1000.0, "height": 900.0},
+			"spectrum_rect": {"x": 732.0, "y": 477.0, "width": 875.0, "height": 76.0},
+			"turrets": [{"col": 1, "row": 5, "dir": 1, "loop": "11111111"}],
 			"pipes": [
-				{"col": 5, "row": 5, "shape": "L", "rotation": 180, "loop": "-,-,-,-,-,-"}
+				{"col": 3, "row": 3, "shape": "L", "rotation": 90, "loop": "-,-,-,-,-,-,-,-"},
+				{"col": 3, "row": 5, "shape": "L", "rotation": 180, "loop": "-,-,-,-,-,-,-,-"},
+				{"col": 3, "row": 7, "shape": "L", "rotation": 0, "loop": "-,-,-,-,-,-,-,-"},
+				
+				{"col": 6, "row": 2, "shape": "L", "rotation": 90, "loop": "-,-,-,-,-,-,-,-"},
+				{"col": 6, "row": 3, "shape": "L", "rotation": 180, "loop": "-,-,-,-,-,-,-,-"},
+				{"col": 6, "row": 4, "shape": "L", "rotation": 0, "loop": "-,-,-,-,-,-,-,-"},
+				
+				{"col": 8, "row": 6, "shape": "L", "rotation": 90, "loop": "-,-,-,-,-,-,-,-"},
+				{"col": 8, "row": 7, "shape": "L", "rotation": 180, "loop": "-,-,-,-,-,-,-,-"},
+				{"col": 8, "row": 8, "shape": "L", "rotation": 0, "loop": "-,-,-,-,-,-,-,-"},
 			],
 			"solution_loops": ["R,-,-,L,-,-"],
 			"targets": [
-				{"col": 5, "row": 2, "required": 3},
-				{"col": 5, "row": 8, "required": 3}
+				{"col": 10, "row": 2, "required": 4},
+				{"col": 10, "row": 4, "required": 4},
+				{"col": 10, "row": 6, "required": 4},
+				{"col": 10, "row": 8, "required": 4}
 			]
 		},
 		{
@@ -138,7 +164,7 @@ static func all_levels() -> Array:
 			"tick_rate_ms": 470.0,
 			"letter_title": "维修委托 #8：左右声道错拍",
 			"letter_body": "两个炮台分别用 8 拍文本错开供给。两枚弯管都需要你写脚本，让到达时刻和分流方向对齐。",
-			"mask": "mp3",
+			"mask": "cidai",
 			"cols": 14,
 			"rows": 10,
 			"turrets": [

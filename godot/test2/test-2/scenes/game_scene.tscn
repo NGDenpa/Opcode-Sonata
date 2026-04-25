@@ -37,10 +37,10 @@ stretch_mode = 6
 
 [node name="BoardPanel" type="Control" parent="." unique_id=1437924733]
 anchors_preset = 0
-offset_left = 366.0
-offset_top = 68.5
-offset_right = 803.5
-offset_bottom = 486.0
+offset_left = 400.0
+offset_top = 67.0
+offset_right = 1085.0
+offset_bottom = 559.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
@@ -52,10 +52,12 @@ anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_top = -92.0
-offset_bottom = -16.0
+offset_left = -2.0000114
+offset_top = -252.0
+offset_right = 12.22998
+offset_bottom = -176.0
 grow_horizontal = 2
-grow_vertical = 2
+grow_vertical = 0
 mouse_filter = 2
 script = ExtResource("3_spectrum")
 
@@ -71,6 +73,7 @@ script = ExtResource("2_board")
 
 [node name="StoryMask" type="TextureRect" parent="." unique_id=1437924736]
 unique_name_in_owner = true
+visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0

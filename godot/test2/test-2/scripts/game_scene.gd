@@ -255,9 +255,66 @@ func _apply_story_mask(mask_name: String) -> void:
 
 func _layout_board_panel() -> void:
 	var scale := Vector2(size.x / DESIGN_SIZE.x, size.y / DESIGN_SIZE.y)
-	var design_rect := _board_rect_for_mask(current_mask_name)
+	var design_rect: Rect2 = _board_rect_for_current_level()
 	board_panel.position = design_rect.position * scale
 	board_panel.size = design_rect.size * scale
+	_layout_spectrum_view(design_rect, scale)
+
+
+func _layout_spectrum_view(board_rect: Rect2, scale: Vector2) -> void:
+	var spectrum_rect: Rect2 = _spectrum_rect_for_current_level(board_rect)
+	spectrum.anchor_left = 0.0
+	spectrum.anchor_top = 0.0
+	spectrum.anchor_right = 0.0
+	spectrum.anchor_bottom = 0.0
+	spectrum.position = (spectrum_rect.position - board_rect.position) * scale
+	spectrum.size = spectrum_rect.size * scale
+
+
+func _spectrum_rect_for_current_level(board_rect: Rect2) -> Rect2:
+	var fallback := Rect2(
+		board_rect.position + Vector2(0.0, board_rect.size.y - 92.0),
+		Vector2(board_rect.size.x, 76.0)
+	)
+	if levels.is_empty() or current_level_idx < 0 or current_level_idx >= levels.size():
+		return fallback
+	var level: Dictionary = levels[current_level_idx]
+	if not level.has("spectrum_rect"):
+		return fallback
+	return _rect_from_level_info(level["spectrum_rect"], fallback)
+
+
+func _board_rect_for_current_level() -> Rect2:
+	var fallback := _board_rect_for_mask(current_mask_name)
+	if levels.is_empty() or current_level_idx < 0 or current_level_idx >= levels.size():
+		return fallback
+	var level: Dictionary = levels[current_level_idx]
+	if not level.has("board_rect"):
+		return fallback
+	return _rect_from_level_info(level["board_rect"], fallback)
+
+
+func _rect_from_level_info(value: Variant, fallback: Rect2) -> Rect2:
+	if value is Dictionary:
+		var rect_info := value as Dictionary
+		return Rect2(
+			Vector2(
+				float(rect_info.get("x", fallback.position.x)),
+				float(rect_info.get("y", fallback.position.y))
+			),
+			Vector2(
+				float(rect_info.get("width", fallback.size.x)),
+				float(rect_info.get("height", fallback.size.y))
+			)
+		)
+	if value is Array:
+		var rect_values := value as Array
+		if rect_values.size() >= 4:
+			return Rect2(
+				Vector2(float(rect_values[0]), float(rect_values[1])),
+				Vector2(float(rect_values[2]), float(rect_values[3]))
+			)
+	return fallback
 
 
 func _board_rect_for_mask(mask_name: String) -> Rect2:
@@ -285,7 +342,42 @@ func _refresh_level_info() -> void:
 	var remaining: int = maxi(0, total_required - total_hits)
 	var level_name := String(levels[current_level_idx].get("name", ""))
 	level_name_label.text = "当前关卡：%s" % [level_name]
-	to_fill_label.text = "洞待填充：%d / %d" % [remaining, total_required]
+	to_fill_label.text = "洞待填充：%d / %d\n%s" % [remaining, total_required, _level_grid_info_text()]
+
+
+func _level_grid_info_text() -> String:
+	var mask_name := current_mask_name
+	if mask_name.is_empty():
+		mask_name = String(levels[current_level_idx].get("mask", ""))
+	var board_rect: Rect2 = _board_rect_for_current_level()
+	var cols: int = logic.cols
+	var rows: int = logic.rows
+	var grid_cell: float = floorf(minf(board_rect.size.x / float(cols), board_rect.size.y / float(rows)))
+	var grid_size := Vector2(grid_cell * float(cols), grid_cell * float(rows))
+	var grid_pos := board_rect.position + (board_rect.size - grid_size) * 0.5
+	var grid_end := grid_pos + grid_size
+	var window_end := board_rect.position + board_rect.size
+	var spectrum_rect: Rect2 = _spectrum_rect_for_current_level(board_rect)
+	var spectrum_end := spectrum_rect.position + spectrum_rect.size
+	return "蒙版：%s\n窗口：%s - %s (%s)\n网格：%d x %d，单格 %.0fpx\n网格位置：%s - %s (%s)\n频谱：%s - %s (%s)" % [
+		mask_name,
+		_format_vec2(board_rect.position),
+		_format_vec2(window_end),
+		_format_vec2(board_rect.size),
+		cols,
+		rows,
+		grid_cell,
+		_format_vec2(grid_pos),
+		_format_vec2(grid_end),
+		_format_vec2(grid_size),
+		_format_vec2(spectrum_rect.position),
+		_format_vec2(spectrum_end),
+		_format_vec2(spectrum_rect.size)
+	]
+
+
+func _format_vec2(value: Vector2) -> String:
+	return "%.0f,%.0f" % [value.x, value.y]
 
 
 func _update_level_nav_buttons() -> void:
