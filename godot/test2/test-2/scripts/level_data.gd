@@ -119,7 +119,7 @@ static func all_levels() -> Array:
 			"rows": 11,
 			"board_rect": {"x": 900.0, "y": 100.0, "width": 1000.0, "height": 900.0},
 			"spectrum_rect": {"x": 890.0, "y": 477.0, "width": 989.0, "height": 76.0},
-			"music_phrase": "G - E F G - E F G - - -",
+			"music_phrase": "G E F G E F G",
 			"music_track": "res://music/clavier-music-pachelbelx27s-canon-canon-in-d-307319.mp3",
 			"turrets": [{"col": 1, "row": 5, "dir": 1, "loop": "11111111"}],
 			"pipes": [
@@ -158,7 +158,7 @@ static func all_levels() -> Array:
 			"rows": 10,
 			"board_rect": {"x": 809.0, "y": 171.0, "width": 1025.0, "height": 805.0},
 			"spectrum_rect": {"x": 905.0, "y": 798.0, "width": 843.0, "height": 76.0},
-			"music_phrase": "G# - G# - G# - F# E B - - -",
+			"music_phrase": "G# G# G# F# E B",
 			"music_track": "res://music/Violin Concerto in E major, RV 269 'Spring' - I. Allegro.mp3",
 			"turrets": [
 				{"col": 1, "row": 5, "dir": 1, "loop": "111111"},
@@ -184,7 +184,7 @@ static func all_levels() -> Array:
 			"thank_you": "It powered on. I found songs I thought I had lost years ago. Thank you for giving them back.",
 			"mask": "mp3",
 			"spectrum_rect": {"x": 735.0, "y": 846.0, "width": 875.0, "height": 76.0},
-			"music_phrase": "G - - D G - - D G D G B D* - - -",
+			"music_phrase": "G D G D G D G B D*",
 			"music_track": "res://music/Mozart - Serenade in G major.mp3",
 			"turrets": [{"col": 1, "row": 3, "dir": 1, "loop": "1--1--"}],
 			"pipes": [
@@ -206,7 +206,7 @@ static func all_levels() -> Array:
 			"rows": 10,
 			"board_rect": {"x": 900.0, "y": 130.0, "width": 875.0, "height": 835.0},
 			"spectrum_rect": {"x": 873.0, "y": 490.0, "width": 875.0, "height": 76.0},
-			"music_phrase": "F# - - - B C# D E F# - - -",
+			"music_phrase": "F# B C# D E F#",
 			"music_track": "res://music/lorenzobuczek-swan-lake-147751.mp3",
 			"turrets": [
 				{"col": 4, "row": 3, "dir": 2, "loop": "11--"},
@@ -224,9 +224,9 @@ static func all_levels() -> Array:
 				{"col": 5, "row": 5, "shape": "L", "rotation": 90, "loop": "-,-,-,-"}
 			],
 			"targets": [
-				{"col": 3, "row": 4, "required": 16},
-				{"col": 4, "row": 5, "required": 32},
-				{"col": 5, "row": 6, "required": 16},
+				{"col": 3, "row": 4, "required": 8},
+				{"col": 4, "row": 5, "required": 16},
+				{"col": 5, "row": 6, "required": 8},
 				#{"col": 3, "row": 7, "required": 32}
 			],
 			"solution_loops": ["-,-,R,R", "-,-,L,L"]
@@ -246,7 +246,7 @@ static func all_levels() -> Array:
 			"cols": 14,
 			"rows": 10,
 			"spectrum_rect": {"x": 893.0, "y": 490.0, "width": 875.0, "height": 76.0},
-			"music_phrase": "E - E E D - E - F# - G - A - - -",
+			"music_phrase": "E E E D E F# G A",
 			"music_track": "res://music/Marche militaire in D, D. 733 no. 1 (2 hands version).mp3",
 			"turrets": [
 				{"col": 2, "row": 2, "dir": 1, "loop": "11--11--"},

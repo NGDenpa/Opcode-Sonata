@@ -128,7 +128,7 @@ func _step_logic() -> void:
 		playing = false
 		tick_timer.stop()
 		status_label.text = "STATUS: REPAIR COMPLETE"
-		GameProgress.unlock(current_level_idx + 1)
+		GameProgress.complete_level(current_level_idx)
 		sound_fx.stop_transient_tones()
 		_show_win_overlay()
 	else:

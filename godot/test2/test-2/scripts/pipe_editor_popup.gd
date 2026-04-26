@@ -7,6 +7,7 @@ signal pipe_script_applied(pipe_id: int, script_csv: String)
 
 var _dim: ColorRect
 var _panel: PanelContainer
+var _scroll: ScrollContainer
 var _lines_box: VBoxContainer
 var _title: Label
 var _hint: Label
@@ -59,6 +60,7 @@ func open_for(pipe: Dictionary, row_count: int, click_global: Vector2) -> void:
 		row.add_child(lab)
 		row.add_child(le)
 		_lines_box.add_child(row)
+	_resize_for_rows(row_count)
 	_title.text = "PIPE SCRIPT (ID %d)" % _pipe_id
 	_hint.text = "Assembly input: rot R / rot L / slp. Apply compiles it into the pipe loop."
 	_panel.position = click_global + Vector2(12, 12)
@@ -119,17 +121,18 @@ func _build_ui() -> void:
 	_style_label(_hint, 12, Color(0.35, 0.95, 0.46, 0.72))
 	outer.add_child(_hint)
 
-	var scroll := ScrollContainer.new()
-	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	scroll.custom_minimum_size = Vector2(0, 118)
+	_scroll = ScrollContainer.new()
+	_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_scroll.custom_minimum_size = Vector2(0, 118)
 	_lines_box = VBoxContainer.new()
 	_lines_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_lines_box.add_theme_constant_override("separation", 4)
-	scroll.add_child(_lines_box)
-	outer.add_child(scroll)
+	_scroll.add_child(_lines_box)
+	outer.add_child(_scroll)
 
 	var apply_btn := Button.new()
 	apply_btn.text = "APPLY"
+	apply_btn.custom_minimum_size = Vector2(0, 32)
 	_style_button(apply_btn)
 	apply_btn.pressed.connect(_on_apply_pressed)
 	outer.add_child(apply_btn)
@@ -196,6 +199,16 @@ func _clamp_panel() -> void:
 	sz.y = maxf(sz.y, _panel.custom_minimum_size.y)
 	_panel.position.x = clampf(_panel.position.x, 6.0, maxf(6.0, vp.x - sz.x - 6.0))
 	_panel.position.y = clampf(_panel.position.y, 6.0, maxf(6.0, vp.y - sz.y - 6.0))
+
+
+func _resize_for_rows(row_count: int) -> void:
+	var vp := get_viewport().get_visible_rect().size
+	var visible_rows := mini(row_count, 6)
+	var scroll_h := clampf(float(visible_rows) * 34.0 + 6.0, 88.0, 210.0)
+	_scroll.custom_minimum_size = Vector2(0, scroll_h)
+	var panel_h := minf(vp.y - 24.0, 158.0 + scroll_h)
+	_panel.custom_minimum_size = Vector2(340, panel_h)
+	_panel.size = _panel.custom_minimum_size
 
 
 func _play_open_anim() -> void:
