@@ -1,6 +1,8 @@
 extends Control
 class_name TurretActionTrack
 
+const TRACK_FONT := preload("res://font/little-pixel.ttf")
+
 var _snapshot: Array = []
 var _pulse := 0.0
 
@@ -30,7 +32,7 @@ func _draw() -> void:
 	draw_rect(bg, Color(0.20, 0.95, 0.38, 0.46), false, 1.0)
 	_draw_scanlines(bg)
 	if _snapshot.is_empty():
-		draw_string(ThemeDB.fallback_font, Vector2(10, size.y * 0.5 + 5.0), "NO SIGNAL", HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color(0.28, 0.85, 0.38, 0.72))
+		draw_string(TRACK_FONT, Vector2(10, size.y * 0.5 + 5.0), "NO SIGNAL", HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color(0.28, 0.85, 0.38, 0.72))
 		return
 	var available_h := maxf(12.0, size.y - 10.0)
 	var row_h := minf(30.0, available_h / float(maxi(_snapshot.size(), 1)))
@@ -53,7 +55,7 @@ func _draw_scanlines(rect: Rect2) -> void:
 func _draw_turret_row(item: Dictionary, y: float, row_h: float) -> void:
 	var label := "T%d" % int(item.get("id", 0))
 	var font_size := int(clampf(row_h * 0.45, 8.0, 13.0))
-	draw_string(ThemeDB.fallback_font, Vector2(10, y + row_h * 0.58), label, HORIZONTAL_ALIGNMENT_LEFT, 34, font_size, Color(0.65, 1.0, 0.67))
+	draw_string(TRACK_FONT, Vector2(10, y + row_h * 0.58), label, HORIZONTAL_ALIGNMENT_LEFT, 34, font_size, Color(0.65, 1.0, 0.67))
 	var script := String(item.get("script", ""))
 	if script.is_empty():
 		return
@@ -82,7 +84,7 @@ func _draw_turret_row(item: Dictionary, y: float, row_h: float) -> void:
 		draw_rect(r, border, false, 1.0)
 		if cell_w >= 9.0 and cell_h >= 10.0:
 			draw_string(
-				ThemeDB.fallback_font,
+				TRACK_FONT,
 				Vector2(r.position.x + r.size.x * 0.5 - 4.0, r.position.y + cell_h * 0.72),
 				action,
 				HORIZONTAL_ALIGNMENT_LEFT,

@@ -275,8 +275,10 @@ func _ensure_solution_preview_buttons() -> void:
 	_solution_apply_button.name = "ApplySolutionButton"
 	_solution_apply_button.text = "CONFIRM"
 	_solution_apply_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_style_terminal_button(_solution_apply_button)
 	_solution_apply_button.pressed.connect(_on_apply_solution_button_pressed)
 	button_row.add_child(_solution_apply_button)
+	_style_terminal_button(guide_ok_button)
 	guide_ok_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	button_row.add_child(guide_ok_button)
 	_solution_apply_button.visible = false
@@ -680,3 +682,47 @@ func _apply_terminal_popup_styles() -> void:
 	popup_style.content_margin_bottom = 14
 	win_card.add_theme_stylebox_override("panel", popup_style)
 	guide_card.add_theme_stylebox_override("panel", popup_style)
+	guide_title.add_theme_font_override("font", TITLE_FONT)
+	guide_text.add_theme_font_override("normal_font", BODY_FONT)
+	win_title.add_theme_font_override("font", TITLE_FONT)
+	_style_terminal_button(guide_ok_button)
+	_style_terminal_button(replay_button)
+	_style_terminal_button(next_level_button)
+
+
+func _style_terminal_button(button: Button) -> void:
+	button.add_theme_font_override("font", BODY_FONT)
+	button.add_theme_font_size_override("font_size", 15)
+	button.add_theme_color_override("font_color", Color(0.78, 1.0, 0.72))
+	button.add_theme_color_override("font_hover_color", Color(0.98, 1.0, 0.90))
+	button.add_theme_color_override("font_pressed_color", Color(0.08, 0.18, 0.08))
+	button.add_theme_color_override("font_disabled_color", Color(0.30, 0.52, 0.32, 0.62))
+	button.add_theme_stylebox_override("normal", _terminal_button_style(false, false))
+	button.add_theme_stylebox_override("hover", _terminal_button_style(true, false))
+	button.add_theme_stylebox_override("pressed", _terminal_button_style(true, true))
+	button.add_theme_stylebox_override("disabled", _terminal_button_style(false, false, true))
+
+
+func _terminal_button_style(hover: bool, pressed: bool, disabled := false) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.025, 0.12, 0.045, 0.92)
+	style.border_color = Color(0.30, 0.95, 0.38, 0.72)
+	if hover:
+		style.bg_color = Color(0.055, 0.25, 0.075, 0.96)
+		style.border_color = Color(0.55, 1.0, 0.58, 0.95)
+	if pressed:
+		style.bg_color = Color(0.60, 1.0, 0.52, 0.95)
+		style.border_color = Color(0.85, 1.0, 0.78, 1.0)
+	if disabled:
+		style.bg_color = Color(0.025, 0.08, 0.035, 0.45)
+		style.border_color = Color(0.20, 0.45, 0.24, 0.38)
+	style.set_border_width_all(2)
+	style.corner_radius_top_left = 2
+	style.corner_radius_top_right = 2
+	style.corner_radius_bottom_left = 2
+	style.corner_radius_bottom_right = 2
+	style.content_margin_left = 12
+	style.content_margin_right = 12
+	style.content_margin_top = 6
+	style.content_margin_bottom = 6
+	return style
