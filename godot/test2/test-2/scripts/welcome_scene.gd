@@ -188,7 +188,7 @@ func _show_playlist() -> void:
 	if _playlist_file_count <= 0:
 		_playlist_box.add_child(_playlist_message("NO AUDIO FILES FOUND"))
 	elif unlocked <= 0:
-		_playlist_box.add_child(_playlist_message("UNLOCK LEVEL 7 TO OPEN PLAYLIST"))
+		_playlist_box.add_child(_playlist_message("CLEAR LEVEL 6 TO UNLOCK MUSIC"))
 	else:
 		for i in range(_tracks.size()):
 			var track: Dictionary = _tracks[i]
@@ -232,7 +232,7 @@ func _load_playlist_tracks_from_list() -> void:
 		return int(a["level_idx"]) < int(b["level_idx"])
 	)
 	_tracks = _tracks.filter(func(track: Dictionary) -> bool:
-		return int(track["level_idx"]) >= 0 and GameProgress.can_open(int(track["level_idx"]))
+		return int(track["level_idx"]) >= 0 and GameProgress.is_music_unlocked(int(track["level_idx"]))
 	)
 
 
