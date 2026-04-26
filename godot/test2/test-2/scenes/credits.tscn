@@ -38,7 +38,7 @@ theme_override_fonts/bold_font = ExtResource("5_mah5v")
 bbcode_enabled = true
 text = "[font_size=34][b][color=3cff78]OPCODE SONATA[/color][/b][/font_size]
 For Gamedev.js Jam 2026 - Theme: Machines
-CHALLENGE 1: Open Source by GitHub
+CHALLENGE : Open Source by GitHub
 
 [font_size=24][b][color=3cff78]Tools[/color][/b][/font_size]
 Game Engine: Godot 4.6
@@ -53,17 +53,15 @@ Mozart - Eine Kleine Nachtmusik / Serenade in G major
 Tchaikovsky - Swan Lake ( Music by LAURENT BUCZEK from Pixabay )
 Franz Schubert - Marche militaire in D, D. 733 no. 1 
 
-[font_size=24][b][color=3cff78]Game Design[/color][/b][/font_size]
-Your Name / Team Name
-[font_size=24][b][color=3cff78]Programming[/color][/b][/font_size]
-Your Name / Team Name
-[font_size=24][b][color=3cff78]Art & Visuals[/color][/b][/font_size]
-Your Name / Artist Name
-[font_size=24][b][color=3cff78]Sound Design & Music[/color][/b][/font_size]
-Your Name / Composer Name
-[font_size=24][b][color=3cff78]Special Thanks[/color][/b][/font_size]
-111
+[font_size=24][b][color=3cff78]Development[/color][/b][/font_size]
+[font_size=20][color=3cff78]Satori[/color][/font_size] : Lead Programmer, Level Designer, Concept Artist, Game Writer
+[font_size=20][color=3cff78]NG[/color][/font_size] : Programmer, Concept Artist, Game Writer
 
+[font_size=24][b][color=3cff78]Development Transparency[/color][/b][/font_size]
+Large Language Models (AI) were utilised as a general assistant for logic refactoring, clean code implementation & drafting for typing paragraphs assets and text translation. While the AI served as a technical consultant, all architectural decisions and system integrations were directed and executed by the developers.
+
+[font_size=24][b][color=3cff78]Special Thanks[/color][/b][/font_size]
+End3r, Enclave Games, and you
 "
 horizontal_alignment = 1
 vertical_alignment = 1

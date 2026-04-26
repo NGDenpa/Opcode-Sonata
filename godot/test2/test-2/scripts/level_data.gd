@@ -78,8 +78,8 @@ static func all_levels() -> Array:
 				{"col": 8, "row": 5, "shape": "L", "rotation": 180, "loop": "-,-,-,-,-,-,-,-"},
 			],
 			"targets": [
-				{"col": 8, "row": 2, "required": 16},
-				{"col": 8, "row": 8, "required": 16}
+				{"col": 8, "row": 2, "required": 6},
+				{"col": 8, "row": 8, "required": 6}
 			],
 			"solution_loops": ["R,L,R,L,R,L,R,L"]
 		},
@@ -102,8 +102,8 @@ static func all_levels() -> Array:
 				{"col": 5, "row": 5, "shape": "I", "rotation": 180, "loop": "-,-,-,-,-,-,-"},
 			],
 			"targets": [
-				{"col": 7, "row": 5, "required": 16},
-				{"col": 5, "row": 7, "required": 16}
+				{"col": 7, "row": 5, "required": 6},
+				{"col": 5, "row": 7, "required": 6}
 				],
 			"solution_loops": ["L,R,L,R,L,R,L,R"]
 		},
@@ -170,9 +170,9 @@ static func all_levels() -> Array:
 			],
 			"solution_loops": ["-,-,-,-,-,-", "R,-,-,L,-,-"],
 			"targets": [
-				{"col": 5, "row": 8, "required": 4},
-				{"col": 8, "row": 3, "required": 8},
-				{"col": 8, "row": 8, "required": 8}
+				{"col": 5, "row": 8, "required": 3},
+				{"col": 8, "row": 3, "required": 5},
+				{"col": 8, "row": 8, "required": 5}
 			]
 		},
 				{
@@ -192,7 +192,7 @@ static func all_levels() -> Array:
 				{"col": 5, "row": 6, "shape": "L", "rotation": 270, "loop": "-,-,-,-,-,-"}
 			],
 			"solution_loops": ["-,-,-,-,-,-", "R,-,-,L,-,-"],
-			"targets": [{"col": 9, "row": 6, "required": 10}]
+			"targets": [{"col": 9, "row": 6, "required": 6}]
 		},
 		{
 			"name": "9",
@@ -224,9 +224,9 @@ static func all_levels() -> Array:
 				{"col": 5, "row": 5, "shape": "L", "rotation": 90, "loop": "-,-,-,-"}
 			],
 			"targets": [
-				{"col": 3, "row": 4, "required": 8},
-				{"col": 4, "row": 5, "required": 16},
-				{"col": 5, "row": 6, "required": 8},
+				{"col": 3, "row": 4, "required": 4},
+				{"col": 4, "row": 5, "required": 8},
+				{"col": 5, "row": 6, "required": 4},
 				#{"col": 3, "row": 7, "required": 32}
 			],
 			"solution_loops": ["-,-,R,R", "-,-,L,L"]
