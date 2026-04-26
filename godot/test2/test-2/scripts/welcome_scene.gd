@@ -5,28 +5,28 @@ const TITLE_FONT := preload("res://font/pixel-highscore.ttf")
 const PLAYLIST_TRACKS := [
 	{
 		"level_idx": 5,
-		"title": "CANON",
-		"path": "res://ui/clavier-music-pachelbelx27s-canon-canon-in-d-307319.mp3"
+		"title": "CANON in D",
+		"path": "res://music/clavier-music-pachelbelx27s-canon-canon-in-d-307319.mp3"
 	},
 	{
 		"level_idx": 6,
 		"title": "SPRING",
-		"path": "res://ui/Violin Concerto in E major, RV 269 'Spring' - I. Allegro.mp3"
+		"path": "res://music/Violin Concerto in E major, RV 269 'Spring' - I. Allegro.mp3"
 	},
 	{
 		"level_idx": 7,
 		"title": "SERENADE",
-		"path": "res://ui/Mozart - Serenade in G major.mp3"
+		"path": "res://music/Mozart - Serenade in G major.mp3"
 	},
 	{
 		"level_idx": 8,
 		"title": "SWAN LAKE",
-		"path": "res://ui/lorenzobuczek-swan-lake-147751.mp3"
+		"path": "res://music/lorenzobuczek-swan-lake-147751.mp3"
 	},
 	{
 		"level_idx": 9,
 		"title": "MILITARY MARCH",
-		"path": "res://ui/Marche militaire in D, D. 733 no. 1 (2 hands version).mp3"
+		"path": "res://music/Marche militaire in D, D. 733 no. 1 (2 hands version).mp3"
 	}
 ]
 
