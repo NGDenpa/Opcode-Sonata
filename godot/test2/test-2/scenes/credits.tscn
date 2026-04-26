@@ -38,7 +38,7 @@ theme_override_fonts/bold_font = ExtResource("5_mah5v")
 bbcode_enabled = true
 text = "[font_size=34][b][color=3cff78]OPCODE SONATA[/color][/b][/font_size]
 For Gamedev.js Jam 2026 - Theme: Machines
-CHALLENGES 1/2/3
+CHALLENGE 1: Open Source by GitHub
 
 [font_size=24][b][color=3cff78]Tools[/color][/b][/font_size]
 Game Engine: Godot 4.6

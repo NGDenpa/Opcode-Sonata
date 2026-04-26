@@ -81,7 +81,7 @@ static func all_levels() -> Array:
 				{"col": 8, "row": 2, "required": 16},
 				{"col": 8, "row": 8, "required": 16}
 			],
-			"solution_loops": ["L,R,L,R"]
+			"solution_loops": ["R,L,R,L,R,L,R,L"]
 		},
 		{
 			"name": "5",
