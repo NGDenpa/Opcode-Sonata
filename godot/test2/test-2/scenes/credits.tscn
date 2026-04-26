@@ -36,7 +36,7 @@ offset_bottom = 581.0
 theme_override_fonts/normal_font = ExtResource("5_mah5v")
 theme_override_fonts/bold_font = ExtResource("5_mah5v")
 bbcode_enabled = true
-text = "[font_size=28][b][color=3cff78]OPCODE SONATA[/color][/b][/font_size]
+text = "[font_size=34][b][color=3cff78]OPCODE SONATA[/color][/b][/font_size]
 For Gamedev.js Jam 2026 - Theme: Machines
 CHALLENGES 1/2/3
 
@@ -52,6 +52,7 @@ Antonio Vivaldi - Violin Concerto in E major, RV 269 'Spring' - I. Allegro
 Mozart - Eine Kleine Nachtmusik / Serenade in G major
 Tchaikovsky - Swan Lake ( Music by LAURENT BUCZEK from Pixabay )
 Franz Schubert - Marche militaire in D, D. 733 no. 1 
+
 [font_size=24][b][color=3cff78]Game Design[/color][/b][/font_size]
 Your Name / Team Name
 [font_size=24][b][color=3cff78]Programming[/color][/b][/font_size]
