@@ -21,7 +21,7 @@ window/stretch/mode="canvas_items"
 
 [machine_loop]
 
-debug=false
+debug=true
 
 [physics]
 
