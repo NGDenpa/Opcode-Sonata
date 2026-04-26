@@ -21,6 +21,7 @@ offset_left = 344.0
 offset_top = 43.0
 offset_right = 815.0
 offset_bottom = 112.0
+theme_override_colors/font_color = Color(0.23529412, 1, 0.47058824, 1)
 theme_override_fonts/font = ExtResource("2_0ctdu")
 theme_override_font_sizes/font_size = 51
 text = "CREDITS"
@@ -33,30 +34,34 @@ offset_top = 162.0
 offset_right = 1043.0
 offset_bottom = 581.0
 theme_override_fonts/normal_font = ExtResource("5_mah5v")
-text = "OPCODE SONATA
+theme_override_fonts/bold_font = ExtResource("5_mah5v")
+bbcode_enabled = true
+text = "[font_size=28][b][color=3cff78]OPCODE SONATA[/color][/b][/font_size]
 For Gamedev.js Jam 2026 - Theme: Machines
 CHALLENGES 1/2/3
 
-ENGINE
-Godot 4.6
-
-
-FONTS
+[font_size=24][b][color=3cff78]Tools[/color][/b][/font_size]
+Game Engine: Godot 4.6
+Software: Photoshop & Aseprite
+[font_size=24][b][color=3cff78]FONTS[/color][/b][/font_size]
 Pixel Highscore by Alex Hinton
 Little Pixel by Ly97
-
-MUSIC
+[font_size=24][b][color=3cff78]MUSIC[/color][/b][/font_size]
+Pachelbel - Canon in D Major ( Music by Clavier Clavier from Pixabay )
 Antonio Vivaldi - Violin Concerto in E major, RV 269 'Spring' - I. Allegro
-
 Mozart - Eine Kleine Nachtmusik / Serenade in G major
-
-Pachelbel - Canon in D Major
-Music by Clavier Clavier from Pixabay
-
+Tchaikovsky - Swan Lake ( Music by LAURENT BUCZEK from Pixabay )
 Franz Schubert - Marche militaire in D, D. 733 no. 1 
-
-Tchaikovsky - Swan Lake
-Music by LAURENT BUCZEK from Pixabay
+[font_size=24][b][color=3cff78]Game Design[/color][/b][/font_size]
+Your Name / Team Name
+[font_size=24][b][color=3cff78]Programming[/color][/b][/font_size]
+Your Name / Team Name
+[font_size=24][b][color=3cff78]Art & Visuals[/color][/b][/font_size]
+Your Name / Artist Name
+[font_size=24][b][color=3cff78]Sound Design & Music[/color][/b][/font_size]
+Your Name / Composer Name
+[font_size=24][b][color=3cff78]Special Thanks[/color][/b][/font_size]
+111
 
 "
 horizontal_alignment = 1

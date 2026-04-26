@@ -11,7 +11,7 @@
 [ext_resource type="Texture2D" uid="uid://3xv7tbkprit5" path="res://ui/playlist.png" id="8_08ct4"]
 [ext_resource type="Texture2D" uid="uid://bhbnd2pdbj5b2" path="res://ui/like_title_hover.png" id="9_2wccb"]
 [ext_resource type="Texture2D" uid="uid://thb7eats4f76" path="res://ui/playlist_pressed.png" id="9_5wa3u"]
-[ext_resource type="Script" uid="uid://lsntv7aqw4aw" path="res://scripts/scanline_background.gd" id="10_ax8j8"]
+[ext_resource type="Script" path="res://scripts/scanline_background.gd" id="10_ax8j8"]
 [ext_resource type="Texture2D" uid="uid://eunwdeg1u1t" path="res://ui/playlist_hover.png" id="10_b071u"]
 
 [node name="WelcomeScene" type="Control" unique_id=700172971]
@@ -81,7 +81,7 @@ texture_pressed = ExtResource("9_5wa3u")
 texture_hover = ExtResource("10_b071u")
 stretch_mode = 0
 
-[node name="like" type="TextureButton" parent="." unique_id=265809326]
+[node name="credits" type="TextureButton" parent="." unique_id=265809326]
 layout_mode = 0
 offset_left = 793.0
 offset_top = 374.99997
@@ -94,4 +94,4 @@ texture_hover = ExtResource("9_2wccb")
 flip_h = true
 
 [connection signal="pressed" from="StartButton" to="." method="_on_start_button_pressed"]
-[connection signal="pressed" from="like" to="." method="like"]
+[connection signal="pressed" from="credits" to="." method="_on_credits_pressed"]

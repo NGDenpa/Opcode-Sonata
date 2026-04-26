@@ -24,7 +24,7 @@ const BODY_FONT := preload("res://font/little-pixel.ttf")
 @onready var duck_button: Button = $DuckButton
 @onready var prev_level_button: Button = %PrevLevelButton
 @onready var next_level_nav_button: Button = %NextLevelNavButton
-@onready var home_button: Button = %HomeButton
+@onready var home_button: Button = $HomeButton
 @onready var win_overlay: ColorRect = $WinOverlay
 @onready var win_card: PanelContainer = $WinOverlay/WinCard
 @onready var win_title: Label = $WinOverlay/WinCard/WinVBox/WinTitle
@@ -86,6 +86,7 @@ func _load_level(idx: int) -> void:
 	_show_guide_if_needed()
 
 func _on_play_button_pressed() -> void:
+	sound_fx.play_ui_click()
 	playing = not playing
 	if playing:
 		pipe_editor.close_editor()
@@ -97,6 +98,7 @@ func _on_play_button_pressed() -> void:
 		status_label.text = "STATUS: PAUSED"
 
 func _on_reset_button_pressed() -> void:
+	sound_fx.play_ui_click()
 	logic.reset()
 	_configure_level_music(levels[current_level_idx])
 	playing = false
@@ -109,6 +111,7 @@ func _on_reset_button_pressed() -> void:
 	_last_total_hits = 0
 
 func _on_step_button_pressed() -> void:
+	sound_fx.play_ui_click()
 	pipe_editor.close_editor()
 	_step_logic()
 	playing = false
@@ -153,9 +156,11 @@ func _show_win_overlay() -> void:
 		win_hint.text = "%s\n\nFINAL REPAIR COMPLETE" % message
 
 func _on_replay_button_pressed() -> void:
+	sound_fx.play_ui_click()
 	_load_level(current_level_idx)
 
 func _on_next_level_button_pressed() -> void:
+	sound_fx.play_ui_click()
 	if current_level_idx < levels.size() - 1 and GameProgress.can_open(current_level_idx + 1):
 		_load_level(current_level_idx + 1)
 	else:
@@ -163,12 +168,14 @@ func _on_next_level_button_pressed() -> void:
 
 
 func _on_prev_level_button_pressed() -> void:
+	sound_fx.play_ui_click()
 	if current_level_idx <= 0:
 		return
 	_load_level(current_level_idx - 1)
 
 
 func _on_next_level_nav_button_pressed() -> void:
+	sound_fx.play_ui_click()
 	var next_idx := current_level_idx + 1
 	if next_idx >= levels.size():
 		return
@@ -179,6 +186,7 @@ func _on_next_level_nav_button_pressed() -> void:
 
 
 func _on_home_button_pressed() -> void:
+	sound_fx.play_ui_click()
 	_return_to_title()
 
 
@@ -224,6 +232,7 @@ func _show_guide_if_needed() -> void:
 	status_label.text = "STATUS: GUIDE - %s" % level_name
 
 func _on_guide_ok_button_pressed() -> void:
+	sound_fx.play_ui_click()
 	guide_overlay.visible = false
 	if _guide_mode == "ending":
 		_return_to_title()
@@ -236,6 +245,7 @@ func _on_guide_ok_button_pressed() -> void:
 
 
 func _on_help_button_pressed() -> void:
+	sound_fx.play_ui_click()
 	_guide_mode = "guide"
 	guide_title.text = "COMMAND MANUAL"
 	guide_text.text = "Command Manual\n\nEmitter actions:\n1 = fire one pulse\n- = wait one beat\n\nPipe assembly:\nrot R = rotate 90 degrees clockwise\nrot L = rotate 90 degrees counterclockwise\nslp = hold position\n\nControls:\nClick a pipe = open pipe script editor\nShift + click a pipe = manually rotate counterclockwise\nN = step one tick"
@@ -248,6 +258,7 @@ func _on_help_button_pressed() -> void:
 
 
 func _on_duck_button_pressed() -> void:
+	sound_fx.play_ui_click()
 	_show_solution_preview()
 
 
@@ -298,6 +309,7 @@ func _show_solution_preview() -> void:
 
 
 func _on_apply_solution_button_pressed() -> void:
+	sound_fx.play_ui_click()
 	if not _can_edit_pipes():
 		status_label.text = "STATUS: RESET BEFORE APPLYING SOLUTION"
 		return
@@ -656,94 +668,15 @@ func _total_hits() -> int:
 
 
 func _apply_terminal_popup_styles() -> void:
-	guide_overlay.color = Color(0.0, 0.035, 0.012, 0.58)
-	guide_card.add_theme_stylebox_override("panel", _terminal_panel_style())
-	win_overlay.color = Color(0.0, 0.035, 0.012, 0.62)
-	win_card.add_theme_stylebox_override("panel", _terminal_panel_style())
-	win_title.add_theme_color_override("font_color", Color(0.66, 1.0, 0.64, 1.0))
-	win_title.add_theme_font_override("font", TITLE_FONT)
-	win_hint.add_theme_color_override("font_color", Color(0.72, 1.0, 0.68, 0.96))
-	_style_terminal_button(replay_button)
-	_style_terminal_button(next_level_button)
-	level_name_label.add_theme_font_override("font", BODY_FONT)
-	to_fill_label.add_theme_font_override("font", BODY_FONT)
-	status_label.add_theme_font_override("font", BODY_FONT)
-	win_hint.add_theme_font_override("font", BODY_FONT)
-	guide_title.add_theme_color_override("font_color", Color(0.66, 1.0, 0.64, 1.0))
-	guide_title.add_theme_font_override("font", TITLE_FONT)
-	guide_title.add_theme_font_size_override("font_size", 22)
-	guide_text.add_theme_stylebox_override("normal", _terminal_text_style())
-	guide_text.add_theme_color_override("default_color", Color(0.72, 1.0, 0.68, 0.96))
-	guide_text.add_theme_font_override("normal_font", BODY_FONT)
-	guide_text.add_theme_font_size_override("normal_font_size", 15)
-	guide_ok_button.add_theme_stylebox_override("normal", _terminal_button_style(Color(0.02, 0.13, 0.05, 0.94), Color(0.25, 0.9, 0.36, 0.66)))
-	guide_ok_button.add_theme_stylebox_override("hover", _terminal_button_style(Color(0.04, 0.22, 0.08, 0.96), Color(0.58, 1.0, 0.56, 0.86)))
-	guide_ok_button.add_theme_stylebox_override("pressed", _terminal_button_style(Color(0.42, 1.0, 0.44, 0.92), Color(0.82, 1.0, 0.76, 1.0)))
-	guide_ok_button.add_theme_font_override("font", BODY_FONT)
-	guide_ok_button.add_theme_color_override("font_color", Color(0.72, 1.0, 0.68, 1.0))
-	guide_ok_button.add_theme_color_override("font_hover_color", Color(0.92, 1.0, 0.78, 1.0))
-	guide_ok_button.add_theme_color_override("font_pressed_color", Color(0.02, 0.12, 0.04, 1.0))
-	if _solution_apply_button != null:
-		_solution_apply_button.add_theme_stylebox_override("normal", _terminal_button_style(Color(0.02, 0.13, 0.05, 0.94), Color(0.25, 0.9, 0.36, 0.66)))
-		_solution_apply_button.add_theme_stylebox_override("hover", _terminal_button_style(Color(0.04, 0.22, 0.08, 0.96), Color(0.58, 1.0, 0.56, 0.86)))
-		_solution_apply_button.add_theme_stylebox_override("pressed", _terminal_button_style(Color(0.42, 1.0, 0.44, 0.92), Color(0.82, 1.0, 0.76, 1.0)))
-		_solution_apply_button.add_theme_stylebox_override("disabled", _terminal_button_style(Color(0.02, 0.08, 0.04, 0.55), Color(0.16, 0.42, 0.18, 0.45)))
-		_solution_apply_button.add_theme_font_override("font", BODY_FONT)
-		_solution_apply_button.add_theme_color_override("font_color", Color(0.72, 1.0, 0.68, 1.0))
-		_solution_apply_button.add_theme_color_override("font_hover_color", Color(0.92, 1.0, 0.78, 1.0))
-		_solution_apply_button.add_theme_color_override("font_pressed_color", Color(0.02, 0.12, 0.04, 1.0))
-		_solution_apply_button.add_theme_color_override("font_disabled_color", Color(0.38, 0.58, 0.38, 0.72))
-	letter_text.add_theme_stylebox_override("normal", _terminal_text_style())
-	letter_text.add_theme_color_override("default_color", Color(0.72, 1.0, 0.68, 0.94))
-	letter_text.add_theme_font_override("normal_font", BODY_FONT)
-	letter_text.add_theme_font_size_override("normal_font_size", 8)
-
-
-func _style_terminal_button(button: Button) -> void:
-	button.add_theme_stylebox_override("normal", _terminal_button_style(Color(0.02, 0.13, 0.05, 0.94), Color(0.25, 0.9, 0.36, 0.66)))
-	button.add_theme_stylebox_override("hover", _terminal_button_style(Color(0.04, 0.22, 0.08, 0.96), Color(0.58, 1.0, 0.56, 0.86)))
-	button.add_theme_stylebox_override("pressed", _terminal_button_style(Color(0.42, 1.0, 0.44, 0.92), Color(0.82, 1.0, 0.76, 1.0)))
-	button.add_theme_stylebox_override("disabled", _terminal_button_style(Color(0.02, 0.08, 0.04, 0.55), Color(0.16, 0.42, 0.18, 0.45)))
-	button.add_theme_font_override("font", BODY_FONT)
-	button.add_theme_color_override("font_color", Color(0.72, 1.0, 0.68, 1.0))
-	button.add_theme_color_override("font_hover_color", Color(0.92, 1.0, 0.78, 1.0))
-	button.add_theme_color_override("font_pressed_color", Color(0.02, 0.12, 0.04, 1.0))
-	button.add_theme_color_override("font_disabled_color", Color(0.38, 0.58, 0.38, 0.72))
-
-
-func _terminal_panel_style() -> StyleBoxFlat:
-	var sb := StyleBoxFlat.new()
-	sb.bg_color = Color(0.015, 0.07, 0.03, 0.96)
-	sb.border_color = Color(0.38, 1.0, 0.46, 0.82)
-	sb.set_border_width_all(2)
-	sb.shadow_color = Color(0.08, 0.45, 0.12, 0.32)
-	sb.shadow_size = 12
-	sb.content_margin_left = 14
-	sb.content_margin_right = 14
-	sb.content_margin_top = 12
-	sb.content_margin_bottom = 14
-	return sb
-
-
-func _terminal_text_style() -> StyleBoxFlat:
-	var sb := StyleBoxFlat.new()
-	sb.bg_color = Color(0.01, 0.085, 0.035, 0.88)
-	sb.border_color = Color(0.22, 0.9, 0.35, 0.45)
-	sb.set_border_width_all(1)
-	sb.content_margin_left = 10
-	sb.content_margin_right = 10
-	sb.content_margin_top = 8
-	sb.content_margin_bottom = 8
-	return sb
-
-
-func _terminal_button_style(bg: Color, border: Color) -> StyleBoxFlat:
-	var sb := StyleBoxFlat.new()
-	sb.bg_color = bg
-	sb.border_color = border
-	sb.set_border_width_all(1)
-	sb.content_margin_left = 8
-	sb.content_margin_right = 8
-	sb.content_margin_top = 5
-	sb.content_margin_bottom = 5
-	return sb
+	var popup_style := StyleBoxFlat.new()
+	popup_style.bg_color = Color(0.015, 0.07, 0.03, 0.96)
+	popup_style.border_color = Color(0.38, 1.0, 0.46, 0.82)
+	popup_style.set_border_width_all(2)
+	popup_style.shadow_color = Color(0.08, 0.45, 0.12, 0.32)
+	popup_style.shadow_size = 12
+	popup_style.content_margin_left = 14
+	popup_style.content_margin_right = 14
+	popup_style.content_margin_top = 12
+	popup_style.content_margin_bottom = 14
+	win_card.add_theme_stylebox_override("panel", popup_style)
+	guide_card.add_theme_stylebox_override("panel", popup_style)

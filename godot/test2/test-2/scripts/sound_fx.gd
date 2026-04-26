@@ -44,6 +44,13 @@ func play_fire() -> void:
 	play_tone(720.0, 0.05, "square", 0.035, 480.0)
 
 
+func play_ui_click() -> void:
+	play_tone(880.0, 0.04, "square", 0.025, 1320.0)
+	play_tone(1100.0, 0.03, "square", 0.015, 1760.0)
+
+
+
+
 func play_hit() -> void:
 	play_tone(520.0, 0.09, "triangle", 0.055, 900.0)
 

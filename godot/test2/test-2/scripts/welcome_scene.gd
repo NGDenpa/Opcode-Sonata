@@ -31,6 +31,7 @@ const PLAYLIST_TRACKS := [
 ]
 
 @onready var playlist_button: TextureButton = $playList
+@onready var sound_fx: SoundFx = $SoundFx
 
 var _level_overlay: ColorRect
 var _level_grid: GridContainer
@@ -44,6 +45,9 @@ var _playlist_file_count := 0
 func _ready() -> void:
 	_music_player = AudioStreamPlayer.new()
 	add_child(_music_player)
+	if not sound_fx:
+		sound_fx = SoundFx.new()
+		add_child(sound_fx)
 	playlist_button.pressed.connect(_on_playlist_pressed)
 	_load_playlist_tracks_from_list()
 	_build_level_select()
@@ -51,21 +55,26 @@ func _ready() -> void:
 
 
 func _on_start_button_pressed() -> void:
+	sound_fx.play_ui_click()
 	_show_level_select()
 
 
 func _start_level(level_idx: int) -> void:
 	if not GameProgress.can_open(level_idx):
 		return
+	if sound_fx:
+		sound_fx.play_ui_click()
 	GameProgress.request_level(level_idx)
 	get_tree().change_scene_to_file("res://scenes/game_scene.tscn")
 
 
-func like():
+func _on_credits_pressed():
+	sound_fx.play_ui_click()
 	get_tree().change_scene_to_file("res://scenes/credits.tscn")
 
 
 func _on_playlist_pressed() -> void:
+	sound_fx.play_ui_click()
 	_show_playlist()
 
 
@@ -107,7 +116,11 @@ func _build_level_select() -> void:
 	var close_btn := Button.new()
 	close_btn.text = "BACK"
 	_style_terminal_button(close_btn)
-	close_btn.pressed.connect(func() -> void: _level_overlay.visible = false)
+	close_btn.pressed.connect(func() -> void:
+		if sound_fx:
+			sound_fx.play_ui_click()
+		_level_overlay.visible = false
+	)
 	box.add_child(close_btn)
 
 
@@ -144,6 +157,8 @@ func _build_playlist() -> void:
 	close_btn.text = "BACK"
 	_style_terminal_button(close_btn)
 	close_btn.pressed.connect(func() -> void:
+		if sound_fx:
+			sound_fx.play_ui_click()
 		_playlist_overlay.visible = false
 	)
 	_playlist_box.add_child(close_btn)
@@ -183,6 +198,8 @@ func _show_playlist() -> void:
 			_style_terminal_button(btn)
 			var path := String(track["path"])
 			btn.pressed.connect(func() -> void:
+				if sound_fx:
+					sound_fx.play_ui_click()
 				_play_track(path)
 			)
 			_playlist_box.add_child(btn)

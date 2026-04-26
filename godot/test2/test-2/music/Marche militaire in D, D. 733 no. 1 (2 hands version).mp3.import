@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://dm0dnllnqjgxo"
+path="res://.godot/imported/Marche militaire in D, D. 733 no. 1 (2 hands version).mp3-2eb48daf4c17a08cd1b527c4d0040a03.mp3str"
+
+[deps]
+
+source_file="res://music/Marche militaire in D, D. 733 no. 1 (2 hands version).mp3"
+dest_files=["res://.godot/imported/Marche militaire in D, D. 733 no. 1 (2 hands version).mp3-2eb48daf4c17a08cd1b527c4d0040a03.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4
